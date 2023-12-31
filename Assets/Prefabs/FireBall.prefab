@@ -119,6 +119,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _movementSpeed: 20
   _characterController: {fileID: -7329854803146765455}
+  _damage: 10
 --- !u!114 &3334673388843800717
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -133,8 +134,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SortKey: 3121990980
   ObjectInterest: 1
-  _DestroyWhenStateAuthorityLeaves: 0
-  _AllowStateAuthorityOverride: 1
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:

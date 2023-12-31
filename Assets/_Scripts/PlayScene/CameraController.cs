@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace SpellFlinger.PlayScene
@@ -44,7 +43,7 @@ namespace SpellFlinger.PlayScene
         private void LateUpdate()
         {
             if (!_initialized) return;
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
             {
                 CameraEnabled = !CameraEnabled;
             }
@@ -94,6 +93,7 @@ namespace SpellFlinger.PlayScene
             _zoomPercentage = 1f;
             transform.LookAt(_endTarget);
             _layerMask = LayerMask.GetMask("Ground");
+            CameraEnabled = true;
         }
     }
 }

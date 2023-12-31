@@ -46,9 +46,4 @@ public abstract class SingletonPersistent<T> : Singleton<T> where T : MonoBehavi
 
         Init();
     }
-
-    protected virtual void Init()
-    {
-
-    }
 }

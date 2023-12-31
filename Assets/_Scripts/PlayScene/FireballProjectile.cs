@@ -1,15 +1,18 @@
 ﻿using Fusion;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SpellFlinger.PlayScene
 {
     public class FireballProjectile : Projectile
     {
-        public override void Throw(Vector3 direction, PlayerRef ownerPlayer)
+        private bool _exploded = false;
+
+        public override void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats)
         {
             _direction = direction.normalized * _movementSpeed;
-            _ownerPlayer = ownerPlayer;
+            _ownerPlayerRef = ownerPlayerRef;
+            _ownerPlayerStats = ownerPlayerStats;
         }
 
         public override void Spawned()
@@ -22,24 +25,30 @@ namespace SpellFlinger.PlayScene
 
         public override void FixedUpdateNetwork()
         {
-            if (HasStateAuthority) return;
             _characterController.Move(_direction * Runner.DeltaTime);
 
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, 0.6f);
+            if (hitColliders.Any((collider) => collider.tag == "Ground")) Explode();
+
             foreach (Collider collider in hitColliders)
             {
-                if (collider.tag == "Ground")
+                if (collider.tag == "Player")
                 {
-                    Explode();
-                    Destroy(gameObject);
-                    return;
+                    PlayerStats player = collider.GetComponentInParent<PlayerStats>();
+                    if (player.Object.StateAuthority != _ownerPlayerRef)
+                    {
+                        player.DealDamageRpc(_damage, _ownerPlayerStats);
+                        if (!_exploded) Explode();
+                    }
                 }
             }
         }
 
         private void Explode()
         {
+            _exploded = true;
             Debug.Log("Exploded");
+            Destroy(gameObject);
         }
     }
 }

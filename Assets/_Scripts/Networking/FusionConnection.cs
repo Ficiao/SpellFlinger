@@ -4,40 +4,110 @@ using Fusion.Sockets;
 using System.Collections.Generic;
 using System;
 using SpellFlinger.PlayScene;
+using SpellFlinger.Enum;
+using SpellFlinger.LoginScene;
+using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 
 namespace SpellSlinger.Networking
 {
     public class FusionConnection : SingletonPersistent<FusionConnection>, INetworkRunnerCallbacks
     {
-        [SerializeField] private CapsuleCharacterController _playerPrefab = null;
+        private static string _playerName = null;
+        [SerializeField] private PlayerCharacterController _playerPrefab = null;
+        [SerializeField] private NetworkRunner _networkRunnerPrefab = null;
+        [SerializeField] private int _playerCount = 10;
         private NetworkRunner _runner = null;
-        private string _roomName = "room";
         private NetworkSceneInfo _networkSceneInfo;
-        private string _playerName = string.Empty;
+        private List<SessionInfo> _sessions = new List<SessionInfo>();
+        private NetworkSceneManagerDefault _networkSceneManager= null;
+        private GameModeType _gameModeType;
+
+        public List<SessionInfo> Sessions => _sessions;
 
         public string PlayerName => _playerName;
 
-        public void StartGame(String playerName, int sceneIndex = 1)
+        private void Awake()
         {
-            _playerName = playerName;
-            _networkSceneInfo.AddSceneRef(SceneRef.FromIndex(sceneIndex));
-            ConnectToRunner();
+            base.Awake();
+            _networkSceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
         }
 
-        public async void ConnectToRunner()
+        public void StartGame(int sceneIndex = 1)
+        {
+            _networkSceneInfo.AddSceneRef(SceneRef.FromIndex(sceneIndex));            
+        }
+
+        public void ConnectToLobby(String playerName)
+        {
+            _playerName = playerName;
+            if (_runner == null) _runner = gameObject.AddComponent<NetworkRunner>();
+            _runner.JoinSessionLobby(SessionLobby.Shared);
+        }
+
+        public void ConnectToLobby()
         {
             if (_runner == null) _runner = gameObject.AddComponent<NetworkRunner>();
+            _runner.JoinSessionLobby(SessionLobby.Shared);
+        }
 
+        public async void JoinSession(string sessionName, GameModeType gameMode, LevelType level)
+        {
             _runner.ProvideInput = false;
+
+            Dictionary<string, SessionProperty> properties = new Dictionary<string, SessionProperty>();
+            properties.Add("level", SessionProperty.Convert((int)level));
+            properties.Add("gameMode", SessionProperty.Convert((int)gameMode));
+            _gameModeType = gameMode;
 
             await _runner.StartGame(new StartGameArgs()
             {
                 GameMode = GameMode.Shared,
-                SessionName = _roomName,
-                Scene = _networkSceneInfo,
-                PlayerCount = 5,
-                SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>(),
+                SessionName = sessionName,
+                Scene = SceneRef.FromIndex((int)level),
+                PlayerCount = _playerCount,
+                SceneManager = _networkSceneManager,
+                SessionProperties = properties,
             });
+        }
+
+        public void LeaveSession()
+        {
+            _runner.Shutdown();
+            SceneManager.LoadScene(0);
+        }
+
+        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
+        {
+            if(_sessions == null || (_sessions.Count == 0 && sessionList.Count > 0))
+            {
+                _sessions = sessionList;
+                SessionView.Instance.UpdateSessionList();
+            }
+            else _sessions = sessionList;
+        }
+
+        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
+        {
+            Debug.Log("On Player Joined");
+            if (player == runner.LocalPlayer)
+            {
+                NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject);
+                PlayerCharacterController characterController = playerObject.GetComponent<PlayerCharacterController>();
+                characterController.enabled = true;
+                runner.SetPlayerObject(runner.LocalPlayer, playerObject);
+                PlayerStats stats = characterController.PlayerStats;
+                stats.SetPlayerName(_playerName);
+                if (_gameModeType == GameModeType.TDM) stats.SetPlayerTeam(PlayerManager.Instance.GetTeamWithLessPlayers());
+                else UiManager.Instance.ShowSoloScore();
+            }
+        }
+
+        private void OnApplicationQuit()
+        {
+            base.OnApplicationQuit();
+
+            if (_runner != null && !_runner.IsDestroyed()) _runner.Shutdown();
         }
 
         public void OnConnectedToServer(NetworkRunner runner)
@@ -90,19 +160,6 @@ namespace SpellSlinger.Networking
             Debug.Log("OnO bject Exit AOI");
         }
 
-        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
-        {
-            Debug.Log("On Player Joined");
-            if (player == runner.LocalPlayer)
-            {
-                NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, new Vector3(0, 1.19f, -0.165f));
-                CapsuleCharacterController characterController = playerObject.GetComponent<CapsuleCharacterController>();
-                characterController.enabled = true;
-                characterController.PlayerName = _playerName;
-                runner.SetPlayerObject(runner.LocalPlayer, playerObject);
-            }
-        }
-
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log("On Player Left");
@@ -128,14 +185,9 @@ namespace SpellSlinger.Networking
             Debug.Log("On Scene Load Start");
         }
 
-        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
-        {
-            Debug.Log("On Session List Updated");
-        }
-
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
-            Debug.Log("On Shut down");
+            Debug.Log("On Shut down, reasone: " + shutdownReason.ToString());
         }
 
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)

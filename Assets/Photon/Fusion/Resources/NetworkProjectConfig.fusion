@@ -14,7 +14,6 @@
     "HideNetworkObjectInactivityGuard": false,
     "Simulation": {
         "InputDataWordCount": 0,
-        "SceneInfoWordCount": 16,
         "ReplicationFeatures": 0,
         "InputTransferMode": 0,
         "PlayerCount": 10,
@@ -58,7 +57,7 @@
         "Fusion.Unity",
         "Assembly-CSharp",
         "Assembly-CSharp-firstpass",
-        "Fusion.UnityPhysics"
+        "Fusion.Addons.Physics"
     ],
     "UseSerializableDictionary": true,
     "NullChecksForNetworkedProperties": true,
