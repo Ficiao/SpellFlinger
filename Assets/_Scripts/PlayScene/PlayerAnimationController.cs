@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace SpellFlinger.PlayScene
 {
     public static class PlayerAnimationController
-    {        
+    {
         private enum LeftRightDirection
         {
             Left = -1,
@@ -20,28 +20,19 @@ namespace SpellFlinger.PlayScene
             Forward = 1,
         }
 
-        private static Dictionary<(LeftRightDirection, ForwardDirection), PlayerAnimationState> _directionToAnimationMap = new Dictionary<(LeftRightDirection, ForwardDirection), PlayerAnimationState>
-        {
-            { (LeftRightDirection.None, ForwardDirection.None), PlayerAnimationState.Idle },
-            { (LeftRightDirection.None, ForwardDirection.Forward), PlayerAnimationState.RunForward },
-            { (LeftRightDirection.None, ForwardDirection.Backward), PlayerAnimationState.RunBack },
-            { (LeftRightDirection.Left, ForwardDirection.None), PlayerAnimationState.StrafeLeft },
-            { (LeftRightDirection.Left, ForwardDirection.Forward), PlayerAnimationState.StrafeForwardLeft },
-            { (LeftRightDirection.Left, ForwardDirection.Backward), PlayerAnimationState.StrafeBackLeft },
-            { (LeftRightDirection.Right, ForwardDirection.None), PlayerAnimationState.StrafeRight },
-            { (LeftRightDirection.Right, ForwardDirection.Forward), PlayerAnimationState.StrafeForwardRight },
-            { (LeftRightDirection.Right, ForwardDirection.Backward), PlayerAnimationState.StrafeForwardRight },
-        };
 
-
-        public static void AnimationUpdate(bool isGrounded, bool isDead, int leftRightDirection, int forwardDirection, ref PlayerAnimationState animationState, Animator animator)
+        public static void AnimationUpdate(bool isGrounded, bool isDead, int leftRightDirection, int forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform)
         {
+            LeftRightDirection leftRightDirectionType = (LeftRightDirection)leftRightDirection;
+            ForwardDirection forwardDirectionType = (ForwardDirection)forwardDirection;
+            modelTransform.rotation = Quaternion.identity;
+
             if (isDead)
             {
                 if (animationState != PlayerAnimationState.Dead)
                 {
-                    animator.SetTrigger("Dead");
                     animationState = PlayerAnimationState.Dead;
+                    animator.SetTrigger(animationState.ToString());
                 }
                 return;
             }
@@ -50,17 +41,65 @@ namespace SpellFlinger.PlayScene
             {
                 if (animationState != PlayerAnimationState.Jumping)
                 {
-                    animator.SetTrigger("Jumping");
                     animationState = PlayerAnimationState.Jumping;
+                    animator.SetTrigger(animationState.ToString());
                 }
                 return;
             }
 
-            PlayerAnimationState nextState = _directionToAnimationMap[((LeftRightDirection)leftRightDirection, (ForwardDirection)forwardDirection)];
-            if (nextState != animationState)
+            if(leftRightDirectionType == LeftRightDirection.None && forwardDirectionType == ForwardDirection.None)
             {
-                animator.SetTrigger(nextState.ToString());
-                animationState = nextState;
+                if(animationState != PlayerAnimationState.Idle)
+                {
+                    animationState = PlayerAnimationState.Idle;
+                    animator.SetTrigger(animationState.ToString());
+                }
+
+                return;
+            }
+
+            if(forwardDirectionType == ForwardDirection.Forward)
+            {
+                if (animationState != PlayerAnimationState.RunForward)
+                {
+                    animationState = PlayerAnimationState.RunForward;
+                    animator.SetTrigger(animationState.ToString());
+                }
+
+                if (leftRightDirectionType == LeftRightDirection.Left) modelTransform.rotation = Quaternion.Euler(0, -35, 0);
+                else if (leftRightDirectionType == LeftRightDirection.Right) modelTransform.rotation = Quaternion.Euler(0, 35, 0);
+                else modelTransform.rotation = Quaternion.identity;
+
+                return;
+            }
+
+            if (forwardDirectionType == ForwardDirection.Backward)
+            {
+                if (animationState != PlayerAnimationState.RunBack)
+                {
+                    animationState = PlayerAnimationState.RunBack;
+                    animator.SetTrigger(animationState.ToString());
+                }
+
+                if (leftRightDirectionType == LeftRightDirection.Left) modelTransform.rotation = Quaternion.Euler(0, 35, 0);
+                else if (leftRightDirectionType == LeftRightDirection.Right) modelTransform.rotation = Quaternion.Euler(0, -35, 0);
+                else modelTransform.rotation = Quaternion.identity;
+
+                return;
+            }
+
+            if(leftRightDirectionType == LeftRightDirection.Left && animationState != PlayerAnimationState.StrafeLeft)
+            {
+                animationState = PlayerAnimationState.StrafeLeft;
+                animator.SetTrigger(animationState.ToString());
+                return;
+            }
+
+            if (leftRightDirectionType == LeftRightDirection.Right && animationState != PlayerAnimationState.StrafeRight)
+            {
+                animationState = PlayerAnimationState.StrafeRight;
+                animator.SetTrigger(animationState.ToString());
+                return;
             }
 
 

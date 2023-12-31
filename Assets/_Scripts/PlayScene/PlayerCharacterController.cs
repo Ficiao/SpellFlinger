@@ -1,4 +1,5 @@
 using Fusion;
+using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
 using System;
 using System.Collections;
@@ -22,11 +23,14 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Transform _shootOrigin;
         [SerializeField] private PlayerStats _playerStats = null;
         [SerializeField] private GameObject _playerModel = null;
+        [SerializeField] private Animator _playerAnimator = null;
         private bool[] inputs = null;
         private float yVelocity = 0;
         private float _yRotation = 0;
         private CameraController _cameraController = null;
         private Projectile _projectilePrefab = null;
+        private PlayerAnimationState _playerAnimationState = PlayerAnimationState.Idle;
+        private int _updatesSinceLastGrounded = 0;
 
         public PlayerStats PlayerStats => _playerStats;
 
@@ -88,9 +92,15 @@ namespace SpellFlinger.PlayScene
 
         public override void FixedUpdateNetwork()
         {
-            if (_playerStats.Health > 0)
+            bool isAlive = _playerStats.Health > 0;
+            Vector2 _inputDirection = Vector2.zero;
+            bool isGrounded = _controller.isGrounded;
+            if (isGrounded) _updatesSinceLastGrounded = 0;
+            else if (_updatesSinceLastGrounded < 2) isGrounded = true;
+            else _updatesSinceLastGrounded++;
+
+            if (isAlive)
             {
-                Vector2 _inputDirection = Vector2.zero;
                 if (inputs[0])
                 {
                     _inputDirection.y += 1;
@@ -110,6 +120,8 @@ namespace SpellFlinger.PlayScene
 
                 Move(_inputDirection);
             }
+
+            PlayerAnimationController.AnimationUpdate(isGrounded, !isAlive, (int)_inputDirection.x, (int)_inputDirection.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform);
         }
 
         private void Move(Vector2 _inputDirection)

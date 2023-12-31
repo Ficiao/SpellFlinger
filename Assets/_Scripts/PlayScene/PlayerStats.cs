@@ -123,7 +123,7 @@ namespace SpellFlinger.PlayScene
         private void OnDestroy()
         {
             if(_playerScoreboardData != null && !_playerScoreboardData.gameObject.IsDestroyed()) Destroy(_playerScoreboardData.gameObject);
-            PlayerManager.Instance.UnregisterPlayer(this);
+            PlayerManager.Instance?.UnregisterPlayer(this);
         }
     }
 }
