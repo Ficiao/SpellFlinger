@@ -1,187 +1,112 @@
 ﻿using UnityEngine;
 using SpellFlinger.Enum;
-using System.Collections.Generic;
 
 namespace SpellFlinger.PlayScene
 {
     public static class PlayerAnimationController
     {
-        private enum LeftRightDirection
+        private static float _currentAngle = 0;
+        private static float _deltaAngle = 0.35f;
+        private static float _lerpCutoff = 0.01f;
+        private static bool _isLeftAttack = false;
+
+        public static void SetDeadState(ref PlayerAnimationState animationState, Animator animator)
         {
-            Left = -1,
-            None = 0,
-            Right = 1,
+            if (animationState != PlayerAnimationState.Dead)
+            {
+                animationState = PlayerAnimationState.Dead;
+                animator.SetTrigger(animationState.ToString());
+            }
         }
 
-        private enum ForwardDirection
+        public static void SetIdleState(ref PlayerAnimationState animationState, Animator animator)
         {
-            Backward = -1,
-            None = 0,
-            Forward = 1,
+            animationState = PlayerAnimationState.Idle;
+            animator.SetTrigger(animationState.ToString());
         }
 
-
-        public static void AnimationUpdate(bool isGrounded, bool isDead, int leftRightDirection, int forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform)
+        public static void PlayShootAnimation(Animator animator)
         {
-            LeftRightDirection leftRightDirectionType = (LeftRightDirection)leftRightDirection;
-            ForwardDirection forwardDirectionType = (ForwardDirection)forwardDirection;
-            modelTransform.rotation = Quaternion.identity;
-
-            if (isDead)
+            animator.SetLayerWeight(1, 1);
+            if (_isLeftAttack)
             {
-                if (animationState != PlayerAnimationState.Dead)
-                {
-                    animationState = PlayerAnimationState.Dead;
-                    animator.SetTrigger(animationState.ToString());
-                }
-                return;
+                animator.SetTrigger("AttackLeft");
+                _isLeftAttack = false;
+            }
+            else
+            {
+                animator.SetTrigger("AttackRight");
+                _isLeftAttack = true;
+            }
+        }
+
+        public static void AnimationUpdate(bool isGrounded, int leftRightDirection, int forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
+        {
+            modelTransform.rotation = referenceTransform.rotation;
+            float rotation;
+            PlayerAnimationState newPlayerAnimationState;
+
+            switch ((leftRightDirection, forwardDirection))
+            {
+                case (1, 1):
+                    rotation = 40f;
+                    newPlayerAnimationState = PlayerAnimationState.RunForward;
+                    break;
+                case (1, 0):
+                    rotation = 90f;
+                    newPlayerAnimationState = PlayerAnimationState.RunForward;
+                    break;
+                case (1, -1):
+                    rotation = -40f;
+                    newPlayerAnimationState = PlayerAnimationState.RunBack;
+                    break;
+                case (0, 1):
+                    rotation = 0f;
+                    newPlayerAnimationState = PlayerAnimationState.RunForward;
+                    break;
+                case (0, 0):
+                    rotation = 0f;
+                    newPlayerAnimationState = PlayerAnimationState.Idle;
+                    break;
+                case (0, -1):
+                    rotation = 0f;
+                    newPlayerAnimationState = PlayerAnimationState.RunBack;
+                    break;
+                case (-1, 1):
+                    rotation = -40f;
+                    newPlayerAnimationState = PlayerAnimationState.RunForward;
+                    break;
+                case (-1, 0):
+                    rotation = -90f;
+                    newPlayerAnimationState = PlayerAnimationState.RunForward;
+                    break;
+                case (-1, -1):
+                    rotation = 40f;
+                    newPlayerAnimationState = PlayerAnimationState.RunBack;
+                    break;
+                default:
+                    rotation = 0f;
+                    newPlayerAnimationState = PlayerAnimationState.Idle;
+                    break;
             }
 
-            if (!isGrounded)
+            if (!isGrounded) newPlayerAnimationState = PlayerAnimationState.Jumping;
+
+            if(Mathf.Abs(_currentAngle - rotation) < _lerpCutoff) _currentAngle = rotation;
+            else _currentAngle = Mathf.Lerp(_currentAngle, rotation, _deltaAngle);
+
+            ApplyAnimation(newPlayerAnimationState, ref animationState, _currentAngle, animator, modelTransform);
+        }
+
+        private static void ApplyAnimation(PlayerAnimationState playerAnimation, ref PlayerAnimationState currentAnimation, float rotation, Animator animator, Transform modelTransform)
+        {
+            if(currentAnimation != playerAnimation)
             {
-                if (animationState != PlayerAnimationState.Jumping)
-                {
-                    animationState = PlayerAnimationState.Jumping;
-                    animator.SetTrigger(animationState.ToString());
-                }
-                return;
+                currentAnimation = playerAnimation;
+                animator.SetTrigger(currentAnimation.ToString());
             }
 
-            if(leftRightDirectionType == LeftRightDirection.None && forwardDirectionType == ForwardDirection.None)
-            {
-                if(animationState != PlayerAnimationState.Idle)
-                {
-                    animationState = PlayerAnimationState.Idle;
-                    animator.SetTrigger(animationState.ToString());
-                }
-
-                return;
-            }
-
-            if(forwardDirectionType == ForwardDirection.Forward)
-            {
-                if (animationState != PlayerAnimationState.RunForward)
-                {
-                    animationState = PlayerAnimationState.RunForward;
-                    animator.SetTrigger(animationState.ToString());
-                }
-
-                if (leftRightDirectionType == LeftRightDirection.Left) modelTransform.rotation = Quaternion.Euler(0, -35, 0);
-                else if (leftRightDirectionType == LeftRightDirection.Right) modelTransform.rotation = Quaternion.Euler(0, 35, 0);
-                else modelTransform.rotation = Quaternion.identity;
-
-                return;
-            }
-
-            if (forwardDirectionType == ForwardDirection.Backward)
-            {
-                if (animationState != PlayerAnimationState.RunBack)
-                {
-                    animationState = PlayerAnimationState.RunBack;
-                    animator.SetTrigger(animationState.ToString());
-                }
-
-                if (leftRightDirectionType == LeftRightDirection.Left) modelTransform.rotation = Quaternion.Euler(0, 35, 0);
-                else if (leftRightDirectionType == LeftRightDirection.Right) modelTransform.rotation = Quaternion.Euler(0, -35, 0);
-                else modelTransform.rotation = Quaternion.identity;
-
-                return;
-            }
-
-            if(leftRightDirectionType == LeftRightDirection.Left && animationState != PlayerAnimationState.StrafeLeft)
-            {
-                animationState = PlayerAnimationState.StrafeLeft;
-                animator.SetTrigger(animationState.ToString());
-                return;
-            }
-
-            if (leftRightDirectionType == LeftRightDirection.Right && animationState != PlayerAnimationState.StrafeRight)
-            {
-                animationState = PlayerAnimationState.StrafeRight;
-                animator.SetTrigger(animationState.ToString());
-                return;
-            }
-
-
-            //if (isGrounded)
-            //{
-            //    switch ((leftRightDirection, forwardDirection))
-            //    {
-            //        case (1, 1):
-            //            if(animationState != PlayerAnimationState.StrafingForwardRight)
-            //            {
-            //                animationState = PlayerAnimationState.StrafingForwardRight;
-            //                animator.SetTrigger("StrafeForwardRight");
-            //            }
-            //            break;
-            //        case (1, 0):
-            //            if (animationState != PlayerAnimationState.StrafingRight)
-            //            {
-            //                animationState = PlayerAnimationState.StrafingRight;
-            //                animator.SetTrigger("StrafeRight");
-            //            }                        
-            //            break;
-            //        case (1, -1):
-            //            if (animationState != PlayerAnimationState.StrafingBackRight)
-            //            {
-            //                animationState = PlayerAnimationState.StrafingBackRight;
-            //                animator.SetTrigger("StrafeBackRight");
-            //            }
-            //            break;
-            //        case (0, 1):
-            //            if (animationState != PlayerAnimationState.RunningForward)
-            //            {
-            //                animationState = PlayerAnimationState.RunningForward;
-            //                animator.SetTrigger("RunForward");
-            //            }
-            //            break;
-            //        case (0, 0):
-            //            if (animationState != PlayerAnimationState.Idle)
-            //            {
-            //                animationState = PlayerAnimationState.Idle;
-            //                animator.SetTrigger("Idle");
-            //            }
-            //            break;
-            //        case (0, -1):
-            //            if (animationState != PlayerAnimationState.RunningBack)
-            //            {
-            //                animationState = PlayerAnimationState.RunningBack;
-            //                animator.SetTrigger("RunBack");
-            //            }
-            //            break;
-            //        case (-1, 1):
-            //            if (animationState != PlayerAnimationState.StrafingForwardLeft)
-            //            {
-            //                animationState = PlayerAnimationState.StrafingForwardLeft;
-            //                animator.SetTrigger("StrafeForwardLeft");
-            //            }
-            //            break;
-            //        case (-1, 0):
-            //            if (animationState != PlayerAnimationState.StrafingLeft)
-            //            {
-            //                animationState = PlayerAnimationState.StrafingLeft;
-            //                animator.SetTrigger("StrafeLeft");
-            //            }
-            //            break;
-            //        case (-1, -1):
-            //            if (animationState != PlayerAnimationState.StrafingBackLeft)
-            //            {
-            //                animationState = PlayerAnimationState.StrafingBackLeft;
-            //                animator.SetTrigger("StrafeBackLeft");
-            //            }
-            //            break;
-            //        default:
-            //            break;
-            //    }
-            //}
-            //else
-            //{
-            //    if (animationState != PlayerAnimationState.Jumping)
-            //    {
-            //        animator.SetTrigger("Jumping", true);
-            //        animationState = PlayerAnimationState.Jumping;
-            //    }
-            //}
+            modelTransform.Rotate(0, rotation, 0);
         }
     }
 }

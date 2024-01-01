@@ -2847,7 +2847,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _zoomLevels: 10
   _angularSpeed: 800
-  _maxAngleBuffer: 2
+  _maxAngleDelta: 4
   _maxCameraAngle: 80
   _shootPoint: {fileID: 1269283663}
 --- !u!81 &1588287388

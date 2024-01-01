@@ -49,6 +49,7 @@ namespace SpellFlinger.PlayScene
             _controller.enabled = true;
             _projectilePrefab = WeaponDataScriptable.Instance.GetWeaponData(WeaponDataScriptable.SelectedWeaponType).WeaponPrefab;
             inputs = new bool[5];
+            PlayerAnimationController.SetIdleState(ref _playerAnimationState, _playerAnimator);
         }
 
         public void Update()
@@ -67,6 +68,8 @@ namespace SpellFlinger.PlayScene
 
         private void Shoot()
         {
+            PlayerAnimationController.PlayShootAnimation(_playerAnimator);
+
             Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
             RaycastHit[] hits = Physics.RaycastAll(_cameraController.transform.position, _cameraController.transform.forward);
             foreach (RaycastHit hit in hits)
@@ -92,36 +95,24 @@ namespace SpellFlinger.PlayScene
 
         public override void FixedUpdateNetwork()
         {
-            bool isAlive = _playerStats.Health > 0;
-            Vector2 _inputDirection = Vector2.zero;
             bool isGrounded = _controller.isGrounded;
             if (isGrounded) _updatesSinceLastGrounded = 0;
-            else if (_updatesSinceLastGrounded < 2) isGrounded = true;
-            else _updatesSinceLastGrounded++;
-
-            if (isAlive)
+            else if (_updatesSinceLastGrounded < 2) 
             {
-                if (inputs[0])
-                {
-                    _inputDirection.y += 1;
-                }
-                if (inputs[1])
-                {
-                    _inputDirection.y -= 1;
-                }
-                if (inputs[2])
-                {
-                    _inputDirection.x -= 1;
-                }
-                if (inputs[3])
-                {
-                    _inputDirection.x += 1;
-                }
-
-                Move(_inputDirection);
+                isGrounded = true;
+                _updatesSinceLastGrounded++;
             }
 
-            PlayerAnimationController.AnimationUpdate(isGrounded, !isAlive, (int)_inputDirection.x, (int)_inputDirection.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform);
+            if (_playerStats.Health <= 0) return;
+
+            Vector2 _inputDirection = Vector2.zero;
+            if (inputs[0]) _inputDirection.y += 1;
+            if (inputs[1]) _inputDirection.y -= 1;
+            if (inputs[2]) _inputDirection.x -= 1;
+            if (inputs[3]) _inputDirection.x += 1;
+
+            PlayerAnimationController.AnimationUpdate(isGrounded, (int)_inputDirection.x, (int)_inputDirection.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
+            Move(_inputDirection);
         }
 
         private void Move(Vector2 _inputDirection)
@@ -153,8 +144,7 @@ namespace SpellFlinger.PlayScene
 
         public void PlayerKilled()
         {
-            _playerModel.SetActive(false);
-            _cameraController.transform.parent = transform;
+            PlayerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
             StartCoroutine(Respawn());
         }
 
@@ -169,8 +159,6 @@ namespace SpellFlinger.PlayScene
             }
 
             UiManager.Instance.HideDeathTimer();
-            _playerModel.SetActive(true);
-            _cameraController.transform.parent = _cameraEndTarget;
             _playerStats.ResetHealth();
             _controller.enabled = false;
             transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();

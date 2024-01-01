@@ -34,7 +34,7 @@ namespace SpellFlinger.PlayScene
             {
                 if (collider.tag == "Player")
                 {
-                    PlayerStats player = collider.GetComponentInParent<PlayerStats>();
+                    PlayerStats player = collider.GetComponent<PlayerStats>();
                     if (player.Object.StateAuthority != _ownerPlayerRef)
                     {
                         player.DealDamageRpc(_damage, _ownerPlayerStats);

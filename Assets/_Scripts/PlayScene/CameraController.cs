@@ -6,7 +6,7 @@ namespace SpellFlinger.PlayScene
     {
         [SerializeField] private int _zoomLevels = 0;
         [SerializeField] private float _angularSpeed = 0;
-        [SerializeField] private float _maxAngleBuffer = 0;
+        [SerializeField] private float _maxAngleDelta = 0;
         [SerializeField] private float _maxCameraAngle = 0;
         [SerializeField] private Transform _shootPoint = null;
         private Transform _endTarget = null;
@@ -51,8 +51,10 @@ namespace SpellFlinger.PlayScene
             if (!_cameraEnabled) return;
 
             float angle = -_angularSpeed * Input.GetAxis("Mouse Y") * Time.deltaTime;
+            angle = Mathf.Clamp(angle, -_maxCameraAngle / _maxAngleDelta, _maxCameraAngle / _maxAngleDelta);
             _oldRotation = _endTarget.localEulerAngles;
             _endTarget.Rotate(angle, 0, 0);
+
             if (Mathf.Abs(_endTarget.localEulerAngles.x) > _maxCameraAngle && Mathf.Abs(_endTarget.localEulerAngles.x) < 360 - _maxCameraAngle)
             {
                 if (Mathf.Abs(_endTarget.localEulerAngles.x) < 360 / 2) _oldRotation.x = _maxCameraAngle;
