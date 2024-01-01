@@ -4,9 +4,9 @@
     {
         Idle = 1,
         RunForward = 2,
-        RunBack = 5,
-        Jumping = 6,
-        Dead = 7,
-        Attack = 8,
+        RunBack = 3,
+        Jumping = 4,
+        Dead = 5,
+        Attack = 6,
     }
 }

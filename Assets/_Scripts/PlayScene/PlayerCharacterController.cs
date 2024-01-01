@@ -49,7 +49,7 @@ namespace SpellFlinger.PlayScene
             _controller.enabled = true;
             _projectilePrefab = WeaponDataScriptable.Instance.GetWeaponData(WeaponDataScriptable.SelectedWeaponType).WeaponPrefab;
             inputs = new bool[5];
-            PlayerAnimationController.SetIdleState(ref _playerAnimationState, _playerAnimator);
+            PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
         }
 
         public void Update()
@@ -159,6 +159,7 @@ namespace SpellFlinger.PlayScene
             }
 
             UiManager.Instance.HideDeathTimer();
+            PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
             _playerStats.ResetHealth();
             _controller.enabled = false;
             transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();

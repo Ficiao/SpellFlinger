@@ -6,23 +6,30 @@ namespace SpellFlinger.PlayScene
     public static class PlayerAnimationController
     {
         private static float _currentAngle = 0;
-        private static float _deltaAngle = 0.35f;
+        private static float _deltaAngle = 0.3f;
         private static float _lerpCutoff = 0.01f;
         private static bool _isLeftAttack = false;
+        private static int _animationStateParameterId = 0;
+
+        public static void Init(ref PlayerAnimationState animationState, Animator animator)
+        {
+            _animationStateParameterId = Animator.StringToHash("AnimationState");
+            animationState = PlayerAnimationState.Idle;
+            animator.SetInteger(_animationStateParameterId, (int)animationState);
+        }
 
         public static void SetDeadState(ref PlayerAnimationState animationState, Animator animator)
         {
-            if (animationState != PlayerAnimationState.Dead)
-            {
-                animationState = PlayerAnimationState.Dead;
-                animator.SetTrigger(animationState.ToString());
-            }
+            animationState = PlayerAnimationState.Dead;
+            animator.SetBool("DeadState", true);
+            animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void SetIdleState(ref PlayerAnimationState animationState, Animator animator)
+        public static void SetAliveState(ref PlayerAnimationState animationState, Animator animator)
         {
             animationState = PlayerAnimationState.Idle;
-            animator.SetTrigger(animationState.ToString());
+            animator.SetBool("DeadState", false);
+            animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
         public static void PlayShootAnimation(Animator animator)
@@ -30,12 +37,14 @@ namespace SpellFlinger.PlayScene
             animator.SetLayerWeight(1, 1);
             if (_isLeftAttack)
             {
-                animator.SetTrigger("AttackLeft");
+                animator.SetBool("AttackLeft", true);
+                animator.SetBool("AttackRight", false);
                 _isLeftAttack = false;
             }
             else
             {
-                animator.SetTrigger("AttackRight");
+                animator.SetBool("AttackLeft", false);
+                animator.SetBool("AttackRight", true);
                 _isLeftAttack = true;
             }
         }
@@ -103,7 +112,7 @@ namespace SpellFlinger.PlayScene
             if(currentAnimation != playerAnimation)
             {
                 currentAnimation = playerAnimation;
-                animator.SetTrigger(currentAnimation.ToString());
+                animator.SetInteger(_animationStateParameterId, (int)currentAnimation);
             }
 
             modelTransform.Rotate(0, rotation, 0);
