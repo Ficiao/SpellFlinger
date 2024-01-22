@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2378179607339279021}
   - component: {fileID: 2378179607339279010}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cube
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -55,7 +55,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2378179607544697754}
   - component: {fileID: 2378179607544697755}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cube (1)
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 2777107701339638490}
   - component: {fileID: 1235568670677583231}
   - component: {fileID: 3945549515268174261}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Well
   m_TagString: Ground
   m_Icon: {fileID: 0}

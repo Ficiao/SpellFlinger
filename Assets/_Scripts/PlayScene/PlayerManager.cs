@@ -1,4 +1,5 @@
 ﻿using SpellFlinger.Enum;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,11 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Color _enemyColor; 
         private List<PlayerStats> _playerStats = new List<PlayerStats>();
         private TeamType _friendlyTeam = TeamType.None;
+
+        public Action OnPlayerTeamTypeSet;
+        public TeamType FriendlyTeam => _friendlyTeam;
+        public Color FriendlyColor => _friendlyColor;
+        public Color EnemyColor => _enemyColor;
 
         public void RegisterPlayer(PlayerStats player)
         {
@@ -46,7 +52,7 @@ namespace SpellFlinger.PlayScene
                 else if (player.Team != TeamType.None) player.SetTeamMaterial(_enemyMaterial, _enemyColor);
             });
 
-            UiManager.Instance.ShowTeamScore(friendlyTeam, _friendlyColor, _enemyColor);
+            OnPlayerTeamTypeSet.Invoke();
         }
     }
 }

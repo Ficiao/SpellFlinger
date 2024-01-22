@@ -269,10 +269,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 494141239846147398}
-  - component: {fileID: 3869066621404792024}
   - component: {fileID: 1977785121756882548}
   m_Layer: 0
-  m_Name: KnightModel
+  m_Name: Knight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -286,7 +285,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977380601174085628}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.05, z: 0}
+  m_LocalPosition: {x: 0, y: -1.08, z: 0}
   m_LocalScale: {x: 0.27, y: 0.27, z: 0.27}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -295,24 +294,6 @@ Transform:
   m_Father: {fileID: 8021553351502256923}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3869066621404792024
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 977380601174085628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 916978004
-  ObjectInterest: 1
-  Flags: 262145
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 1977785121756882548}
 --- !u!114 &1977785121756882548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -872,7 +853,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 2.2
   m_Radius: 0.5
-  m_SlopeLimit: 45
+  m_SlopeLimit: 90
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
@@ -900,10 +881,15 @@ MonoBehaviour:
   _jumpSpeed: 0.55
   _thorwForce: 600
   _respawnTime: 5
+  _slopeRaycastDistance: 1.2
   _shootOrigin: {fileID: 5309609598348471599}
   _playerStats: {fileID: 646171336720109413}
   _playerModel: {fileID: 977380601174085628}
+  _modelLeftHand: {fileID: 6588018020662732654}
+  _modelRightHand: {fileID: 1793733794221526373}
   _playerAnimator: {fileID: 7645790273635992488}
+  _slowAmount: 0.5
+  _fireRate: 0
 --- !u!114 &646171336720109413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -921,12 +907,15 @@ MonoBehaviour:
   _maxHealth: 100
   _itemAmount: 0
   _maxItemAmount: 3
-  _playerModel: {fileID: 1289808449618283893}
+  _playerModel: {fileID: 7544048933497512450}
+  _teamKillsForWin: 0
+  _soloKillsForWin: 0
   _PlayerName:
     _length: 0
     _data:
       Data: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   _Team: 0
+  _SelectedWeapon: 0
   _Health: 0
   _Kills: 0
   _Deaths: 0
@@ -996,13 +985,13 @@ MonoBehaviour:
   SortKey: 3185664157
   ObjectInterest: 1
   Flags: 262145
-  NestedObjects:
-  - {fileID: 3869066621404792024}
+  NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 4082986052222582566}
   - {fileID: 646171336720109413}
   - {fileID: 3581342487162540059}
   - {fileID: 160892964657384794}
+  - {fileID: 1977785121756882548}
 --- !u!114 &3581342487162540059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1764,7 +1753,7 @@ GameObject:
   - component: {fileID: 5241677780068840838}
   - component: {fileID: 3122133734521537385}
   m_Layer: 0
-  m_Name: Knight
+  m_Name: KnightModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

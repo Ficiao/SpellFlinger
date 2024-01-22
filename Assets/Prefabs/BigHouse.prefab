@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 523748436957430902}
   - component: {fileID: 2350963824021172412}
   - component: {fileID: 3990708812854193210}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BigHouse
   m_TagString: Ground
   m_Icon: {fileID: 0}

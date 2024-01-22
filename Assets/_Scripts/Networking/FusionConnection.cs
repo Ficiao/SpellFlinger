@@ -8,6 +8,7 @@ using SpellFlinger.Enum;
 using SpellFlinger.LoginScene;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
+using SpellFlinger.Scriptables;
 
 namespace SpellSlinger.Networking
 {
@@ -98,7 +99,7 @@ namespace SpellSlinger.Networking
                 runner.SetPlayerObject(runner.LocalPlayer, playerObject);
                 PlayerStats stats = characterController.PlayerStats;
                 stats.SetPlayerName(_playerName);
-                if (_gameModeType == GameModeType.TDM) stats.SetPlayerTeam(PlayerManager.Instance.GetTeamWithLessPlayers());
+                if (_gameModeType == GameModeType.TDM) stats.SetPlayerTeamAndWeapon(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType);
                 else UiManager.Instance.ShowSoloScore();
             }
         }

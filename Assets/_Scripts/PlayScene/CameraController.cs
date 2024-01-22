@@ -1,3 +1,5 @@
+using SpellFlinger.Scriptables;
+using System;
 using UnityEngine;
 
 namespace SpellFlinger.PlayScene
@@ -50,7 +52,7 @@ namespace SpellFlinger.PlayScene
 
             if (!_cameraEnabled) return;
 
-            float angle = -_angularSpeed * Input.GetAxis("Mouse Y") * Time.deltaTime;
+            float angle = - SensitivitySettingsScriptable.Instance.UpDownSensitivity * Input.GetAxis("Mouse Y") * Time.deltaTime;
             angle = Mathf.Clamp(angle, -_maxCameraAngle / _maxAngleDelta, _maxCameraAngle / _maxAngleDelta);
             _oldRotation = _endTarget.localEulerAngles;
             _endTarget.Rotate(angle, 0, 0);
@@ -81,7 +83,7 @@ namespace SpellFlinger.PlayScene
             if (Physics.SphereCast(_endTarget.position, 0.5f, _worldPositionNoCollision - _endTarget.position, out hit,
                 Vector3.Distance(_worldPositionNoCollision, _endTarget.position), _layerMask))
             {
-                transform.position = Vector3.Lerp(_endTarget.localPosition, hit.point, 0.975f);
+                transform.position = Vector3.Lerp(_endTarget.position, hit.point, 0.975f);
             }
         }
 

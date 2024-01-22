@@ -16,7 +16,10 @@ namespace SpellFlinger.LoginScene
 
         private void Awake()
         {
-            _loginButton.onClick.AddListener(LoginPressed);
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
+
+                _loginButton.onClick.AddListener(LoginPressed);
             _quitButton.onClick.AddListener(() =>
             {
 #if UNITY_EDITOR

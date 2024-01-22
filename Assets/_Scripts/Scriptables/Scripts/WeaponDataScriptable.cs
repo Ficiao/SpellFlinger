@@ -27,6 +27,9 @@ namespace SpellFlinger.Scriptables
             public WeaponType WeaponType;
             public Sprite WeaponImage;
             public Projectile WeaponPrefab;
+            public GameObject GlovePrefab;
+            public Vector3 GloveLocation;
+            public float FireRate;
         }
 
         [SerializeField] private List<WeaponData> _weapons;

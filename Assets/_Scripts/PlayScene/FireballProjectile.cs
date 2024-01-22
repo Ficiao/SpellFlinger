@@ -1,4 +1,5 @@
 ﻿using Fusion;
+using SpellFlinger.Enum;
 using System.Linq;
 using UnityEngine;
 
@@ -6,7 +7,13 @@ namespace SpellFlinger.PlayScene
 {
     public class FireballProjectile : Projectile
     {
+        [SerializeField] private float _range = 0f;
+        [SerializeField] private float _explosionRange = 0f;
+        [SerializeField] private float _explosionDuration = 0f;
+        [SerializeField] private GameObject _projectileEffect = null;
+        [SerializeField] private GameObject _explosionEffect = null;
         private bool _exploded = false;
+        private PlayerStats _hitPlayer = null;
 
         public override void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats)
         {
@@ -25,30 +32,62 @@ namespace SpellFlinger.PlayScene
 
         public override void FixedUpdateNetwork()
         {
-            _characterController.Move(_direction * Runner.DeltaTime);
+            if (_exploded) return;
 
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, 0.6f);
-            if (hitColliders.Any((collider) => collider.tag == "Ground")) Explode();
+            transform.Translate(_direction * Runner.DeltaTime);
+            _effectModel.transform.rotation = Quaternion.FromToRotation(transform.forward, _direction.normalized);
+
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);
 
             foreach (Collider collider in hitColliders)
             {
-                if (collider.tag == "Player")
-                {
-                    PlayerStats player = collider.GetComponent<PlayerStats>();
-                    if (player.Object.StateAuthority != _ownerPlayerRef)
-                    {
-                        player.DealDamageRpc(_damage, _ownerPlayerStats);
-                        if (!_exploded) Explode();
-                    }
-                }
+                if (collider.tag != "Player") continue;
+
+                PlayerStats player = collider.GetComponent<PlayerStats>();
+
+                if (player.Object.StateAuthority == _ownerPlayerRef) continue;
+                if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
+
+                player.DealDamageRpc(_damage, _ownerPlayerStats);
+                _hitPlayer = player;
+                Explode();
+
+                break;
             }
+
+            if (!_exploded && hitColliders.Any((collider) => collider.tag == "Ground")) Explode();
         }
 
         private void Explode()
         {
             _exploded = true;
             Debug.Log("Exploded");
-            Destroy(gameObject);
+
+            _projectileEffect.SetActive(false);
+            _explosionEffect.SetActive(true);
+
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, _explosionRange);
+
+            foreach (Collider collider in hitColliders)
+            {
+                if (collider.tag != "Player") continue;
+
+                PlayerStats player = collider.GetComponent<PlayerStats>();
+
+                if (player.Object.StateAuthority == _ownerPlayerRef) continue;
+                if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
+                if (player == _hitPlayer) continue;
+
+                player.DealDamageRpc(_damage, _ownerPlayerStats);
+            }
+
+            Destroy(gameObject, _explosionDuration);
         }
+
+        //private void Update()
+        //{
+        //    Collider[] hitColliders = Physics.OverlapSphere(transform.position, _explosionRange);
+        //    if (hitColliders.Any((collider) => collider.tag == "Ground")) Debug.Log("In range");
+        //}
     }
 }

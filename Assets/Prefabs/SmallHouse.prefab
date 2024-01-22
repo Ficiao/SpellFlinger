@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8968868114159457824}
   - component: {fileID: 6598658896902857450}
   - component: {fileID: 5499652639366790760}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SmallHouse
   m_TagString: Ground
   m_Icon: {fileID: 0}

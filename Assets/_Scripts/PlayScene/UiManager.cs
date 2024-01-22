@@ -23,10 +23,15 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private TextMeshProUGUI _teamAScoreText = null;
         [SerializeField] private TextMeshProUGUI _teamBScoreText = null;
         [SerializeField] private TextMeshProUGUI _soloScoreText = null;
+        [SerializeField] private TextMeshProUGUI _healthText = null;
+        [SerializeField] private Slider _healthSlider = null;
         private int _teamAKills = 0;
         private int _teamBKills = 0;
+        private Color _friendlyColor;
+        private Color _enemyColor;
+        private TeamType _friendlyTeamType;
 
-        private void Awake()
+        private void Start()
         {
             base.Awake();
             _pauseButton.onClick.AddListener(() => _pauseMenu.SetActive(true));
@@ -40,6 +45,8 @@ namespace SpellFlinger.PlayScene
                 CameraController.Instance.CameraEnabled = false;
                 FusionConnection.Instance.LeaveSession();
             });
+
+            PlayerManager.Instance.OnPlayerTeamTypeSet += ShowTeamScore;
         }
 
         private void Update()
@@ -66,21 +73,21 @@ namespace SpellFlinger.PlayScene
             _aimCursor.SetActive(true);
         }
 
-        public void ShowTeamScore(TeamType friendlyTeam, Color friendlyColor, Color enemyColor)
+        private void ShowTeamScore()
         {
             _teamScore.SetActive(true);
             _teamAScoreText.text = "Team A: 0";
             _teamBScoreText.text = "Team B: 0";
 
-            if (friendlyTeam == TeamType.TeamA)
+            if (PlayerManager.Instance.FriendlyTeam == TeamType.TeamA)
             {
-                _teamAScoreText.color = friendlyColor;
-                _teamBScoreText.color = enemyColor;
+                _teamAScoreText.color = PlayerManager.Instance.FriendlyColor;
+                _teamBScoreText.color = PlayerManager.Instance.EnemyColor;
             }
             else 
             {
-                _teamAScoreText.color = enemyColor;
-                _teamBScoreText.color = friendlyColor;
+                _teamAScoreText.color = PlayerManager.Instance.EnemyColor;
+                _teamBScoreText.color = PlayerManager.Instance.FriendlyColor;
             }
         }
 
@@ -90,20 +97,28 @@ namespace SpellFlinger.PlayScene
             _soloScoreText.text = "Kill: 0";
         }
 
-        public void IncreaseTeamScore(TeamType team)
+        public int IncreaseTeamScore(TeamType team)
         {
             if (team == TeamType.TeamA)
             {
                 _teamAKills++;
                 _teamAScoreText.text = "Team A: " + _teamAKills.ToString();
+                return _teamAKills;
             }
             else
             {
                 _teamBKills++;
                 _teamBScoreText.text = "Team B: " + _teamBKills.ToString();
+                return _teamBKills;
             }
         }
 
         public void UpdateSoloScore(int kills) => _soloScoreText.text = "Kills: " + kills.ToString();
+
+        public void UpdateHealthBar(int health, float healthPercentage)
+        {
+            _healthText.text = health.ToString();
+            _healthSlider.value = healthPercentage;
+        }
     }
 }

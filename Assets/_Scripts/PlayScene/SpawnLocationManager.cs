@@ -10,7 +10,7 @@ namespace SpellFlinger.PlayScene
 
         public Vector3 GetRandomSpawnLocation()
         {
-            int index = Random.Range(0, _spawnLocations.Count - 1);
+            int index = Random.Range(0, _spawnLocations.Count);
             return _spawnLocations[index].position;
         }
     }
