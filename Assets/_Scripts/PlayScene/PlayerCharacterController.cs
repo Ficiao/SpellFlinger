@@ -75,7 +75,7 @@ namespace SpellFlinger.PlayScene
 
             if (!_cameraController.CameraEnabled) return;
 
-            _yRotation += Input.GetAxis("Mouse X") * _angularSpeed * Runner.DeltaTime;
+            _yRotation += Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity * Runner.DeltaTime;
             if (Input.GetMouseButton(0) && Time.time > _fireCooldown)
             {
                 _fireCooldown = Time.time + _fireRate;

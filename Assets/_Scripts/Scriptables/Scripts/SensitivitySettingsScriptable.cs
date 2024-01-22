@@ -21,13 +21,15 @@ namespace SpellFlinger.Scriptables
 
         [SerializeField] private float _upDownSensitivity = 0f;
         [SerializeField] private float _leftRightSensitivity = 0f;
-        private float _upDownMultiplyer = 1f;
-        private float _leftRightMultiplyer = 1f;
+        private float _upDownMultiplier = 1f;
+        private float _leftRightMultiplier = 1f;
 
-        public float UpDownSensitivity => _upDownSensitivity * _upDownMultiplyer;
-        public float LeftRightSensitivity => _leftRightSensitivity * _leftRightMultiplyer;
+        public float UpDownSensitivity => _upDownSensitivity * _upDownMultiplier;
+        public float LeftRightSensitivity => _leftRightSensitivity * _leftRightMultiplier;
+        public float UpDownMultiplier => _upDownMultiplier;
+        public float LeftRightMultiplier => _leftRightMultiplier;
 
-        public void SetUpDownMultiplyer(float multiplyer) => _upDownMultiplyer = multiplyer;
-        public void SetLeftRightMultiplyer(float multiplyer) => _leftRightMultiplyer = multiplyer;
+        public void SetUpDownMultiplier(float multiplier) => _upDownMultiplier = multiplier;
+        public void SetLeftRightMultiplier(float multiplier) => _leftRightMultiplier = multiplier;
     }
 }

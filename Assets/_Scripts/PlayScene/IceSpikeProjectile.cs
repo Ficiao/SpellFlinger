@@ -47,6 +47,7 @@ namespace SpellFlinger.PlayScene
                 if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
 
                 player.DealDamageRpc(_damage, _ownerPlayerStats);
+                player.ApplySlowRpc(_slowDuration);
                 _stopped = true;
                 Destroy(gameObject);
 

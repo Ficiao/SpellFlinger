@@ -154,7 +154,7 @@ MonoBehaviour:
   __ownerPlayerStats: {fileID: 0}
   _range: 0.357
   _dissolveDelay: 3
-  _slowDuration: 5
+  _slowDuration: 2.5
 --- !u!114 &-6168624602984156745
 MonoBehaviour:
   m_ObjectHideFlags: 0

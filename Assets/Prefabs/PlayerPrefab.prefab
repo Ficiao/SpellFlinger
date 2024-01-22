@@ -888,7 +888,7 @@ MonoBehaviour:
   _modelLeftHand: {fileID: 6588018020662732654}
   _modelRightHand: {fileID: 1793733794221526373}
   _playerAnimator: {fileID: 7645790273635992488}
-  _slowAmount: 0.5
+  _slowAmount: 0.7
   _fireRate: 0
 --- !u!114 &646171336720109413
 MonoBehaviour:

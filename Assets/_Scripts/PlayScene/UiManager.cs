@@ -1,4 +1,5 @@
 ﻿using SpellFlinger.Enum;
+using SpellFlinger.Scriptables;
 using SpellSlinger.Networking;
 using TMPro;
 using UnityEngine;
@@ -25,6 +26,8 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private TextMeshProUGUI _soloScoreText = null;
         [SerializeField] private TextMeshProUGUI _healthText = null;
         [SerializeField] private Slider _healthSlider = null;
+        [SerializeField] private Slider _upDownSensitivity = null;
+        [SerializeField] private Slider _leftRightSensitivity = null;
         private int _teamAKills = 0;
         private int _teamBKills = 0;
         private Color _friendlyColor;
@@ -47,6 +50,12 @@ namespace SpellFlinger.PlayScene
             });
 
             PlayerManager.Instance.OnPlayerTeamTypeSet += ShowTeamScore;
+
+            _upDownSensitivity.value = SensitivitySettingsScriptable.Instance.UpDownMultiplier;
+            _leftRightSensitivity.value = SensitivitySettingsScriptable.Instance.LeftRightMultiplier;
+
+            _upDownSensitivity.onValueChanged.AddListener((mutliplier) => SensitivitySettingsScriptable.Instance.SetUpDownMultiplier(mutliplier));
+            _leftRightSensitivity.onValueChanged.AddListener((mutliplier) => SensitivitySettingsScriptable.Instance.SetLeftRightMultiplier(mutliplier));
         }
 
         private void Update()

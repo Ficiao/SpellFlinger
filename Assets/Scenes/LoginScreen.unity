@@ -27623,6 +27623,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levelDataScriptable: {fileID: 11400000, guid: a26380108a15f7944acb15b2a3913a3d, type: 2}
   _weaponDataScriptable: {fileID: 11400000, guid: a9e46d8e91aa16445957bd12311a4085, type: 2}
+  _sensitivitySettingsScriptable: {fileID: 11400000, guid: 60ccc80b6969dab42a27298ada4868d2, type: 2}
 --- !u!1 &1324738660
 GameObject:
   m_ObjectHideFlags: 0
