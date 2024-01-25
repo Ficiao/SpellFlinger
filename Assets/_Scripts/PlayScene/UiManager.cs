@@ -28,6 +28,8 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Slider _healthSlider = null;
         [SerializeField] private Slider _upDownSensitivity = null;
         [SerializeField] private Slider _leftRightSensitivity = null;
+        [SerializeField] private GameObject _gameEndScreen = null;
+        [SerializeField] private TextMeshProUGUI _winnerText = null;
         private int _teamAKills = 0;
         private int _teamBKills = 0;
         private Color _friendlyColor;
@@ -122,12 +124,61 @@ namespace SpellFlinger.PlayScene
             }
         }
 
+        public int AddTeamScore(TeamType team, int amount)
+        {
+            if (team == TeamType.TeamA)
+            {
+                _teamAKills += amount;
+                _teamAScoreText.text = "Team A: " + _teamAKills.ToString();
+                return _teamAKills;
+            }
+            else
+            {
+                _teamBKills += amount;
+                _teamBScoreText.text = "Team B: " + _teamBKills.ToString();
+                return _teamBKills;
+            }
+        }
+
         public void UpdateSoloScore(int kills) => _soloScoreText.text = "Kills: " + kills.ToString();
+
+        public void ResetScore()
+        {
+            _teamAKills = 0;
+            _teamAScoreText.text = "Team A: 0";
+            _teamBKills = 0;
+            _teamBScoreText.text = "Team B: 0";
+            _soloScoreText.text = "Kills: 0";
+        }
 
         public void UpdateHealthBar(int health, float healthPercentage)
         {
             _healthText.text = health.ToString();
             _healthSlider.value = healthPercentage;
+        }
+
+        public void ShowEndGameScreen(TeamType winnerTeam, Color textColor)
+        {
+            if (winnerTeam == TeamType.TeamA) _winnerText.text = "Team A wins!!!";
+            else _winnerText.text = "Team B wins!!!";
+            _winnerText.color = textColor;
+            _gameEndScreen.SetActive(true);
+            _aimCursor.SetActive(false);
+        }
+
+        public void ShowEndGameScreen(string playerName, Color textColor)
+        {
+            if (playerName == FusionConnection.Instance.PlayerName) _winnerText.text = "You win!!!";
+            else _winnerText.text = $"{playerName} wins!!!";
+            _winnerText.color = textColor;
+            _gameEndScreen.SetActive(true);
+            _aimCursor.SetActive(false);
+        }
+
+        public void HideEndGameScreen()
+        {
+            _gameEndScreen.SetActive(false);
+            _aimCursor.SetActive(true);
         }
     }
 }

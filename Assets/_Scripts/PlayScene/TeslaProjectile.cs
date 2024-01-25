@@ -5,12 +5,9 @@ using UnityEngine;
 
 namespace SpellFlinger.PlayScene
 {
-    public class IceSpikeProjectile : Projectile
+    public class TeslaProjectile : Projectile
     {
         [SerializeField] private float _range = 0f;
-        [SerializeField] private float _dissolveDelay = 0f;
-        [SerializeField] private float _slowDuration = 0f;
-        private bool _stopped = false;
 
         public override void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats)
         {
@@ -29,8 +26,6 @@ namespace SpellFlinger.PlayScene
 
         public override void FixedUpdateNetwork()
         {
-            if (_stopped) return;
-
             transform.Translate(_direction * Runner.DeltaTime);
             _effectModel.transform.rotation = Quaternion.FromToRotation(transform.forward, _direction.normalized);
 
@@ -46,18 +41,12 @@ namespace SpellFlinger.PlayScene
                 if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
 
                 player.DealDamageRpc(_damage, _ownerPlayerStats);
-                player.ApplySlowRpc(_slowDuration);
-                _stopped = true;
                 Destroy(gameObject);
 
-                break;
+                return;
             }
 
-            if (!_stopped && hitColliders.Any((collider) => collider.tag == "Ground"))
-            {
-                _stopped = true;
-                Destroy(gameObject, _dissolveDelay);
-            }
+            if (hitColliders.Any((collider) => collider.tag == "Ground")) Destroy(gameObject);
         }
 
         //private void Update()

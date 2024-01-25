@@ -1,5 +1,4 @@
 using Fusion;
-using JetBrains.Annotations;
 using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
 using TMPro;
@@ -14,15 +13,13 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private TextMeshPro _playerNameText = null;
         [SerializeField] private Slider _healthBar = null;
         [SerializeField] private int _maxHealth = 100;
-        [SerializeField] private int _itemAmount = 0;
-        [SerializeField] private int _maxItemAmount = 3;
         [SerializeField] private GameObject _playerModel = null;
-        [SerializeField] private int _teamKillsForWin = 0;
-        [SerializeField] private int _soloKillsForWin = 0;
         private bool _init = false;
         private PlayerScoreboardData _playerScoreboardData = null;
         private PlayerCharacterController _playerCharacterController = null;
-        private float _slowDuation = 0f; 
+        private float _slowDuation = 0f;
+        public bool _isGameEnd = false;
+        object _gameEndLock = new object();
 
         public bool IsSlowed => _slowDuation > 0.001f;
 
@@ -43,6 +40,8 @@ namespace SpellFlinger.PlayScene
             _playerCharacterController = GetComponent<PlayerCharacterController>();
             PlayerManager.Instance.RegisterPlayer(this);
             if (HasStateAuthority) _playerNameText.gameObject.SetActive(false);
+            //Adds Kills-1 because 1 will be added in custom change checker
+            else if (Team != TeamType.None && Kills > 0) UiManager.Instance.AddTeamScore(Team, Kills - 1);
         }
 
         public void SetPlayerTeamAndWeapon(TeamType team, WeaponType weaponType)
@@ -106,6 +105,32 @@ namespace SpellFlinger.PlayScene
 
         public void ResetHealth() => Health = _maxHealth;
 
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void GameEndRpc(TeamType winnerTeam)
+        {
+            lock (_gameEndLock)
+            {
+                if (_isGameEnd) return;
+                _isGameEnd = true;
+            }
+
+            Color winnerColor = Team == winnerTeam ? PlayerManager.Instance.FriendlyColor : PlayerManager.Instance.EnemyColor;
+            _playerCharacterController.GameEnd(winnerTeam, winnerColor);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void GameEndRpc(string winnerName)
+        {
+            lock (_gameEndLock)
+            {
+                if (_isGameEnd) return;
+                _isGameEnd = true;
+            }
+
+            Color winnerColor = PlayerName == winnerName ? PlayerManager.Instance.FriendlyColor : PlayerManager.Instance.EnemyColor;
+            _playerCharacterController.GameEnd(winnerName, winnerColor);
+        }
+
         private void CustomChangeDetector()
         {
             if (Health != _oldHealth)
@@ -119,19 +144,16 @@ namespace SpellFlinger.PlayScene
             {
                 if (Team == TeamType.None)
                 {
-                    if (HasStateAuthority) UiManager.Instance.UpdateSoloScore(Kills);
-                    if (Kills >= _soloKillsForWin)
+                    if (HasStateAuthority)
                     {
-
+                        UiManager.Instance.UpdateSoloScore(Kills);
+                        if (Kills >= PlayerManager.Instance.SoloKillsForWin) PlayerManager.Instance.SendGameEndRpc(PlayerName.Value);
                     }
                 }
-                else if (Kills != _oldKills)
+                else if (Kills != _oldKills && Kills > 0)
                 {
                     int teamKills = UiManager.Instance.IncreaseTeamScore(Team);
-                    if(teamKills >= _teamKillsForWin)
-                    {
-
-                    }
+                    if(teamKills >= PlayerManager.Instance.TeamKillsForWin) PlayerManager.Instance.SendGameEndRpc(Team);
                 }
 
                 _playerScoreboardData.UpdateScore(Kills, Deaths);
@@ -160,6 +182,14 @@ namespace SpellFlinger.PlayScene
             {
                 _playerModel.GetComponent<Renderer>().material = material;
             }
+        }
+
+        public void ResetGameInfo()
+        {
+            Kills = 0;
+            Deaths = 0;
+            UiManager.Instance.ResetScore();
+            _isGameEnd = false;
         }
 
         private void OnDestroy()

@@ -1,9 +1,4 @@
-﻿using SpellFlinger.Enum;
-using SpellFlinger.PlayScene;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SpellFlinger.Scriptables
 {

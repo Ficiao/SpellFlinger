@@ -10,7 +10,9 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Material _friendlyMaterial; 
         [SerializeField] private Material _enemyMaterial;        
         [SerializeField] private Color _friendlyColor; 
-        [SerializeField] private Color _enemyColor; 
+        [SerializeField] private Color _enemyColor;
+        [SerializeField] private int _teamKillsForWin = 0;
+        [SerializeField] private int _soloKillsForWin = 0;
         private List<PlayerStats> _playerStats = new List<PlayerStats>();
         private TeamType _friendlyTeam = TeamType.None;
 
@@ -18,6 +20,8 @@ namespace SpellFlinger.PlayScene
         public TeamType FriendlyTeam => _friendlyTeam;
         public Color FriendlyColor => _friendlyColor;
         public Color EnemyColor => _enemyColor;
+        public int TeamKillsForWin => _teamKillsForWin;
+        public int SoloKillsForWin => _soloKillsForWin;
 
         public void RegisterPlayer(PlayerStats player)
         {
@@ -53,6 +57,21 @@ namespace SpellFlinger.PlayScene
             });
 
             OnPlayerTeamTypeSet.Invoke();
+        }
+
+        public void SendGameEndRpc(string winnerName)
+        {
+            _playerStats.ForEach((player) => player.GameEndRpc(winnerName));
+        }
+
+        public void SendGameEndRpc(TeamType winnerTeam)
+        {
+            _playerStats.ForEach((player) => player.GameEndRpc(winnerTeam));
+        }
+
+        public void ResetGameStats()
+        {
+            _playerStats.ForEach((player) => player.ResetGameInfo());  
         }
     }
 }

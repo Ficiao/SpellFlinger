@@ -65,6 +65,7 @@ namespace SpellFlinger.PlayScene
 
             _projectileEffect.SetActive(false);
             _explosionEffect.SetActive(true);
+            ExplodeEffectRpc();
 
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, _explosionRange);
 
@@ -82,6 +83,14 @@ namespace SpellFlinger.PlayScene
             }
 
             Destroy(gameObject, _explosionDuration);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void ExplodeEffectRpc()
+        {
+            if (HasStateAuthority) return;
+            _projectileEffect.SetActive(false);
+            _explosionEffect.SetActive(true);
         }
 
         //private void Update()

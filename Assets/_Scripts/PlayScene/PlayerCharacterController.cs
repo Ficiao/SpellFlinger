@@ -18,7 +18,6 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private float _gravity = -9.81f;
         [SerializeField] private float _moveSpeed = 5f;
         [SerializeField] private float _jumpSpeed = 5f;
-        [SerializeField] private float _thorwForce = 600f;
         [SerializeField] private int _respawnTime = 0;
         [SerializeField] private float _slopeRaycastDistance = 0f;
         [SerializeField] private Transform _shootOrigin;
@@ -28,6 +27,8 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Transform _modelRightHand = null;
         [SerializeField] private Animator _playerAnimator = null;
         [SerializeField] private float _slowAmount = 0f;
+        [SerializeField] private float _doubleJumpDelay = 0f;
+        [SerializeField] private float _doubleJumpBoost = 1f;
         private bool[] inputs = null;
         private float yVelocity = 0;
         private float _yRotation = 0;
@@ -37,6 +38,10 @@ namespace SpellFlinger.PlayScene
         private int _updatesSinceLastGrounded = 0;
         [SerializeField] private float _fireRate = 0;
         private float _fireCooldown = 0;
+        private bool _respawnReady = false;
+        private bool _doubleJumpAvailable = false;
+        private float _jumpTime = 0;
+        private IEnumerator _respawnCoroutine = null;
 
         public PlayerStats PlayerStats => _playerStats;
 
@@ -112,6 +117,8 @@ namespace SpellFlinger.PlayScene
 
         public override void FixedUpdateNetwork()
         {
+            if(_respawnReady) Respawn();
+
             bool isGrounded = _controller.isGrounded;
             if (isGrounded) _updatesSinceLastGrounded = 0;
             else if (_updatesSinceLastGrounded < 2) 
@@ -120,7 +127,7 @@ namespace SpellFlinger.PlayScene
                 _updatesSinceLastGrounded++;
             }
 
-            if (_playerStats.Health <= 0) return;
+            if (_playerStats.Health <= 0 || _controller.enabled == false) return;
 
             Vector2 _inputDirection = Vector2.zero;
             if (inputs[0]) _inputDirection.y += 1;
@@ -129,10 +136,10 @@ namespace SpellFlinger.PlayScene
             if (inputs[3]) _inputDirection.x += 1;
 
             PlayerAnimationController.AnimationUpdate(isGrounded, (int)_inputDirection.x, (int)_inputDirection.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
-            Move(_inputDirection);
+            Move(_inputDirection, isGrounded);
         }
 
-        private void Move(Vector2 _inputDirection)
+        private void Move(Vector2 _inputDirection, bool isGroundedFrameNormalized)
         {
             transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
 
@@ -154,7 +161,18 @@ namespace SpellFlinger.PlayScene
                 if (inputs[4])
                 {
                     yVelocity = _jumpSpeed;
+                    _jumpTime = Time.time;
+                    inputs[4] = false;
                 }
+            }
+
+            if(isGroundedFrameNormalized) _doubleJumpAvailable = true;
+            else if(inputs[4] && _doubleJumpAvailable  && Time.time - _jumpTime >= _doubleJumpDelay)
+            {
+                _doubleJumpAvailable = false;
+                yVelocity = _jumpSpeed * _doubleJumpBoost;
+                Debug.Log("Double jumped");
+                inputs[4] = false;
             }
 
             _moveDirection = AdjustVelocityToSlope(_moveDirection);
@@ -178,17 +196,69 @@ namespace SpellFlinger.PlayScene
             return velocity;
         }
 
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void DisableControllerRpc()
+        {
+            if (HasStateAuthority) return;
+            _controller.enabled = false;
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void EnableControllerRpc()
+        {
+            if (HasStateAuthority) return;
+            _controller.enabled = true;
+        }
+
+        public void GameEnd(TeamType winnerTeam, Color winnerColor)
+        {
+            UiManager.Instance.ShowEndGameScreen(winnerTeam, winnerColor);
+            UiManager.Instance.HideDeathTimer();
+            if (_respawnCoroutine != null)
+            {
+                StopCoroutine(_respawnCoroutine);
+                _respawnCoroutine = null;
+            }
+            StartCoroutine(GameEndCountdown());
+        }
+
+        public void GameEnd(string winnerName, Color winnerColor)
+        {
+            UiManager.Instance.ShowEndGameScreen(winnerName, winnerColor);
+            UiManager.Instance.HideDeathTimer();
+            if (_respawnCoroutine != null)
+            {
+                StopCoroutine(_respawnCoroutine);
+                _respawnCoroutine = null;
+            }
+            StartCoroutine(GameEndCountdown());
+        }
+
+        private IEnumerator GameEndCountdown()
+        {
+            _cameraController.CameraEnabled = false;
+            _controller.enabled = false;
+
+            yield return new WaitForSeconds(7);
+
+            _respawnReady = true;
+            UiManager.Instance.HideEndGameScreen();
+            PlayerManager.Instance.ResetGameStats();
+        }
+
         public void PlayerKilled()
         {
             PlayerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
-            StartCoroutine(Respawn());
+            _respawnCoroutine = RespawnCD();
+            StartCoroutine(_respawnCoroutine);
         }
 
-        private IEnumerator Respawn()
+        private IEnumerator RespawnCD()
         {
             UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
             _cameraController.CameraEnabled = false;
             _controller.enabled = false;
+            DisableControllerRpc();
 
             for (int i = 1; i < _respawnTime; i++)
             {
@@ -196,14 +266,20 @@ namespace SpellFlinger.PlayScene
                 UiManager.Instance.UpdateDeathTimer(_respawnTime - i);
             }
 
-            UiManager.Instance.HideDeathTimer();
-            PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
-            _playerStats.ResetHealth();
-            transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
-            _controller.enabled = true;
-            _cameraController.CameraEnabled = true;
+            _respawnReady = true;
+            _respawnCoroutine = null;
         }
 
-
+        private void Respawn()
+        {
+            _respawnReady = false;
+            _playerStats.ResetHealth();
+            UiManager.Instance.HideDeathTimer();
+            PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
+            transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
+            _controller.enabled = true;
+            EnableControllerRpc();
+            _cameraController.CameraEnabled = true;
+        }
     }
 }

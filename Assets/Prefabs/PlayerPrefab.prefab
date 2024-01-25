@@ -888,7 +888,9 @@ MonoBehaviour:
   _modelLeftHand: {fileID: 6588018020662732654}
   _modelRightHand: {fileID: 1793733794221526373}
   _playerAnimator: {fileID: 7645790273635992488}
-  _slowAmount: 0.7
+  _slowAmount: 0.6
+  _doubleJumpDelay: 0.4
+  _doubleJumpBoost: 1.2
   _fireRate: 0
 --- !u!114 &646171336720109413
 MonoBehaviour:
@@ -965,7 +967,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 3485277354548307455}
   m_Material: {fileID: 0}
   m_IsTrigger: 1
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.56993437
   m_Height: 2.2845998
   m_Direction: 1

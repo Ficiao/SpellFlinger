@@ -23,7 +23,6 @@ namespace SpellSlinger.Networking
         private List<SessionInfo> _sessions = new List<SessionInfo>();
         private NetworkSceneManagerDefault _networkSceneManager= null;
         private GameModeType _gameModeType;
-
         public List<SessionInfo> Sessions => _sessions;
 
         public string PlayerName => _playerName;

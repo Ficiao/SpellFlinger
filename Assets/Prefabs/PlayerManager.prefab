@@ -48,3 +48,5 @@ MonoBehaviour:
   _enemyMaterial: {fileID: 2100000, guid: 1d7dfca09fa9bc042a0419d9ee51cbb2, type: 2}
   _friendlyColor: {r: 0.30263197, g: 1, b: 0, a: 1}
   _enemyColor: {r: 1, g: 0, b: 0, a: 1}
+  _teamKillsForWin: 2
+  _soloKillsForWin: 2
