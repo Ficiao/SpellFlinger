@@ -19,14 +19,6 @@ namespace SpellFlinger.PlayScene
             _ownerPlayerStats = ownerPlayerStats;
         }
 
-        public override void Spawned()
-        {
-            if (Object.HasInputAuthority) Invoke("DelayEnable", 0.05f); 
-        }
-
-        private void DelayEnable() => enabled = true;
-
-
         public override void FixedUpdateNetwork()
         {
             if (_stopped) return;

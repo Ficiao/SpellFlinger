@@ -33,11 +33,6 @@ namespace SpellSlinger.Networking
             _networkSceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
         }
 
-        public void StartGame(int sceneIndex = 1)
-        {
-            _networkSceneInfo.AddSceneRef(SceneRef.FromIndex(sceneIndex));            
-        }
-
         public void ConnectToLobby(String playerName)
         {
             _playerName = playerName;
@@ -99,7 +94,11 @@ namespace SpellSlinger.Networking
                 PlayerStats stats = characterController.PlayerStats;
                 stats.SetPlayerName(_playerName);
                 if (_gameModeType == GameModeType.TDM) stats.SetPlayerTeamAndWeapon(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType);
-                else UiManager.Instance.ShowSoloScore();
+                else
+                {
+                    stats.SetPlayerTeamAndWeapon(TeamType.None, WeaponDataScriptable.SelectedWeaponType);
+                    UiManager.Instance.ShowSoloScore();
+                }
             }
         }
 

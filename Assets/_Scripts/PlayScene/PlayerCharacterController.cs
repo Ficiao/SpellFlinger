@@ -47,10 +47,10 @@ namespace SpellFlinger.PlayScene
 
         public override void Spawned()
         {
-            if (HasStateAuthority) Initialize(1, new Vector3(0, 0, 0));
+            if (HasStateAuthority) Initialize(1);
         }
 
-        private void Initialize(int id, Vector3 spawnPosition)
+        private void Initialize(int id)
         {
             _cameraController = CameraController.Instance;
             _cameraController.transform.parent = _cameraEndTarget;
@@ -212,8 +212,8 @@ namespace SpellFlinger.PlayScene
 
         public void GameEnd(TeamType winnerTeam, Color winnerColor)
         {
-            UiManager.Instance.ShowEndGameScreen(winnerTeam, winnerColor);
             UiManager.Instance.HideDeathTimer();
+            UiManager.Instance.ShowEndGameScreen(winnerTeam, winnerColor);
             if (_respawnCoroutine != null)
             {
                 StopCoroutine(_respawnCoroutine);
@@ -224,8 +224,8 @@ namespace SpellFlinger.PlayScene
 
         public void GameEnd(string winnerName, Color winnerColor)
         {
-            UiManager.Instance.ShowEndGameScreen(winnerName, winnerColor);
             UiManager.Instance.HideDeathTimer();
+            UiManager.Instance.ShowEndGameScreen(winnerName, winnerColor);
             if (_respawnCoroutine != null)
             {
                 StopCoroutine(_respawnCoroutine);
@@ -277,8 +277,8 @@ namespace SpellFlinger.PlayScene
             UiManager.Instance.HideDeathTimer();
             PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
             transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
-            _controller.enabled = true;
             EnableControllerRpc();
+            _controller.enabled = true;
             _cameraController.CameraEnabled = true;
         }
     }
