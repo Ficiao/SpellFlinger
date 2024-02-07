@@ -33,7 +33,6 @@ namespace SpellSlinger.Networking
             _networkSceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
         }
 
-        public void ConnectToLobby(String playerName)
         public void ConnectToLobby(String playerName = null)
         {
             if(!_playerName.IsNullOrEmpty()) _playerName = playerName;
