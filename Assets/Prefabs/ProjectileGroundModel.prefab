@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3683365068786905358}
   - component: {fileID: 3683365068786905357}
   m_Layer: 6
-  m_Name: Stone
+  m_Name: ProjectileGroundModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a53122ceeecb1b14b9c8bce445d11702, type: 2}
+  - {fileID: 2100000, guid: 0a6b51c994f566e47b3f334cb28fe6cb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

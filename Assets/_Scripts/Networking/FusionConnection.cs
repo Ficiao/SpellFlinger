@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Fusion;
 using Fusion.Sockets;
 using System.Collections.Generic;
@@ -33,7 +33,6 @@ namespace SpellSlinger.Networking
             _networkSceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
         }
 
-        public void ConnectToLobby(String playerName)
         public void ConnectToLobby(String playerName = null)
         {
             if(!_playerName.IsNullOrEmpty()) _playerName = playerName;
@@ -42,22 +41,17 @@ namespace SpellSlinger.Networking
 
         public async void JoinSession(string sessionName, GameModeType gameMode, LevelType level)
         {
+
             _runner.ProvideInput = false;
 
-            Dictionary<string, SessionProperty> properties = new Dictionary<string, SessionProperty>();
-            properties.Add("level", SessionProperty.Convert((int)level));
-            properties.Add("gameMode", SessionProperty.Convert((int)gameMode));
-            _gameModeType = gameMode;
-
-            await _runner.StartGame(new StartGameArgs()
-            {
-                GameMode = GameMode.Shared,
-                SessionName = sessionName,
-                Scene = SceneRef.FromIndex((int)level),
-                PlayerCount = _playerCount,
-                SceneManager = _networkSceneManager,
-                SessionProperties = properties,
-            });
+            /* U ovoj metodi potrebno je lokalno cache-irati odabrani način igre, te pozvati metodu StartGame NetworkRunner instance koja igrača spaja u sobu.
+             * StartGame metoda prima argument tipa strukture. Potrebno je napraviti novu instancu strukture, te joj inicijalizirati vrijednosti.
+             * Potrebno je postaviti način igre na Shared, proslijediti ime sesije, scenu koja se treba učitat nakon spajanja u sobu (parametar se 
+             * predaje u obliku SceneRef.FromIndex()), maksimalni broj igrača, scene manager iz lokalne reference i SessionProperties. 
+             * U SessionProperties ulaze custom svojstva, u ovom slučaju su to tip igre i level koji se treba učitati. Proučite kojeg tipa je 
+             * SessionPropeties, te mu proslijedite sva potrebna svojstva. (tip: za pretvaranje custom svojstva u pogodan oblik može se koristiti
+             * SessionProperty.Convert() metoda.
+             */
         }
 
         public void LeaveSession()
