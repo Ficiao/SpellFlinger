@@ -578,7 +578,7 @@ GameObject:
   - component: {fileID: 263283935}
   - component: {fileID: 263283936}
   m_Layer: 5
-  m_Name: RoomCreator
+  m_Name: RoomCreation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2569,7 +2569,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1491087611}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4182,8 +4182,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1525856015}
   - {fileID: 980092257}
+  - {fileID: 1525856015}
   - {fileID: 622355564}
   - {fileID: 263283935}
   m_Father: {fileID: 1969564797}
@@ -4470,7 +4470,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1491087611}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1.07}
   m_AnchorMax: {x: 1, y: 1.175}
@@ -4675,6 +4675,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1551149177}
   - component: {fileID: 1551149176}
+  - component: {fileID: 1551149178}
+  - component: {fileID: 1551149179}
   m_Layer: 0
   m_Name: FusionConnection
   m_TagString: Untagged
@@ -4697,6 +4699,8 @@ MonoBehaviour:
   _playerPrefab: {fileID: 4082986052222582566, guid: cd5ea4ce5bf1ad443acf6326d815c7cd, type: 3}
   _networkRunnerPrefab: {fileID: 5290083422531946106, guid: 85d8ff041cad15c4aa69e8e40e1238d0, type: 3}
   _playerCount: 10
+  _runner: {fileID: 1551149178}
+  _networkSceneManager: {fileID: 0}
 --- !u!4 &1551149177
 Transform:
   m_ObjectHideFlags: 0
@@ -4712,6 +4716,32 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1551149178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551149175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1199893898, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1551149179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551149175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90a93abf1a391964a94e5c139605105b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IsSceneTakeOverEnabled: 1
+  LogSceneLoadErrors: 1
 --- !u!1 &1561204146
 GameObject:
   m_ObjectHideFlags: 0
@@ -5450,7 +5480,7 @@ GameObject:
   - component: {fileID: 1777014130}
   - component: {fileID: 1777014131}
   m_Layer: 5
-  m_Name: Login
+  m_Name: LoginMenu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

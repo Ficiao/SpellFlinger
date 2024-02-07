@@ -1,4 +1,4 @@
-using SpellFlinger.Enum;
+﻿using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
 using SpellSlinger.Networking;
 using TMPro;

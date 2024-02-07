@@ -9,6 +9,7 @@ using SpellFlinger.LoginScene;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
 using SpellFlinger.Scriptables;
+using WebSocketSharp;
 
 namespace SpellSlinger.Networking
 {
@@ -18,10 +19,9 @@ namespace SpellSlinger.Networking
         [SerializeField] private PlayerCharacterController _playerPrefab = null;
         [SerializeField] private NetworkRunner _networkRunnerPrefab = null;
         [SerializeField] private int _playerCount = 10;
-        private NetworkRunner _runner = null;
-        private NetworkSceneInfo _networkSceneInfo;
+        [SerializeField] private NetworkRunner _runner = null;
+        [SerializeField] private NetworkSceneManagerDefault _networkSceneManager= null;
         private List<SessionInfo> _sessions = new List<SessionInfo>();
-        private NetworkSceneManagerDefault _networkSceneManager= null;
         private GameModeType _gameModeType;
         public List<SessionInfo> Sessions => _sessions;
 
@@ -34,15 +34,9 @@ namespace SpellSlinger.Networking
         }
 
         public void ConnectToLobby(String playerName)
+        public void ConnectToLobby(String playerName = null)
         {
-            _playerName = playerName;
-            if (_runner == null) _runner = gameObject.AddComponent<NetworkRunner>();
-            _runner.JoinSessionLobby(SessionLobby.Shared);
-        }
-
-        public void ConnectToLobby()
-        {
-            if (_runner == null) _runner = gameObject.AddComponent<NetworkRunner>();
+            if(!_playerName.IsNullOrEmpty()) _playerName = playerName;
             _runner.JoinSessionLobby(SessionLobby.Shared);
         }
 
