@@ -19,8 +19,6 @@ namespace SpellFlinger.LoginScene
         [SerializeField] private WeaponSelectionToggle _weaponSelectionTogglePrefab = null;
         [SerializeField] private ToggleGroup _weaponSelectionContainer = null;
         private (string, GameModeType, LevelType) _sessionData;
-        private Dictionary<string, LevelType> _levelTypeFromString = new Dictionary<string, LevelType>();
-        private Dictionary<string, GameModeType> _gameModeTypeFromString = new Dictionary<string, GameModeType>();
         private List<SessionDataView> _sessions = new List<SessionDataView>();
 
         private void Awake()
@@ -33,16 +31,6 @@ namespace SpellFlinger.LoginScene
             });
 
             _joinButton.interactable = false;
-
-            foreach (LevelType levelType in System.Enum.GetValues(typeof(LevelType)))
-            {
-                _levelTypeFromString.Add(levelType.ToString(), levelType);
-            }
-
-            foreach (GameModeType gameModeType in System.Enum.GetValues(typeof(GameModeType)))
-            {
-                _gameModeTypeFromString.Add(gameModeType.ToString(), gameModeType);
-            }
 
             foreach (var data in WeaponDataScriptable.Instance.Weapons)
             {
