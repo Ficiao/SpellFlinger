@@ -26,15 +26,12 @@ namespace SpellFlinger.LoginScene
              * Popis podataka o scenama se može dobiti iz instance LevelDataScriptable klase.
              * Stvaranje i inicijalizaciju objekata se provodi na sličan način kao stvaranje
              * Toggle objekata za izbor oružja u Awake metodi SessionView klase.
+             * 
+             * Nakon toga je potrebno inicijalizirati callback Return gumba da na pritisak gasi 
+             * izbornik stvaranja sobe i otvara izbornik odabira otvorenih soba.
+             * Također potrebno je inicijalizirati callback Create Room gumba da na pritisak
+             * poziva metodu za stvaranje sobe.
              */
-
-            _returnButton.onClick.AddListener(() => 
-            {
-                _sessionView.SetActive(true);
-                gameObject.SetActive(false);
-            });
-
-            _createRoomButton.onClick.AddListener(CreateRoom);
         }
 
         private void CreateRoom()
