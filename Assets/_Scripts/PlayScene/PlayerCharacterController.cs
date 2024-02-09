@@ -1,4 +1,4 @@
-using Fusion;
+﻿using Fusion;
 using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
 using System;
@@ -42,6 +42,7 @@ namespace SpellFlinger.PlayScene
         private bool _doubleJumpAvailable = false;
         private float _jumpTime = 0;
         private IEnumerator _respawnCoroutine = null;
+        private float _squareRootOfTwo = (float)Math.Sqrt(2);
 
         public PlayerStats PlayerStats => _playerStats;
 
@@ -72,20 +73,14 @@ namespace SpellFlinger.PlayScene
 
         public void Update()
         {
-            inputs[0]=Input.GetKey(KeyCode.W);
-            inputs[1]=Input.GetKey(KeyCode.S);
-            inputs[2]=Input.GetKey(KeyCode.A);
-            inputs[3]=Input.GetKey(KeyCode.D);
-            inputs[4]=Input.GetKey(KeyCode.Space);
-
-            if (!_cameraController.CameraEnabled) return;
-
-            _yRotation += Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity * Runner.DeltaTime;
-            if (Input.GetMouseButton(0) && Time.time > _fireCooldown)
-            {
-                _fireCooldown = Time.time + _fireRate;
-                Shoot();
-            }
+            /*
+             * U ovoj metodi je potrebno spremiti unos tipki za kretanje naprijed, nazad, lijevo, desno i skok 
+             * u lokalnu varijablu unosa. Također, ako je privatna varijabla instance CameraController, koja određuje je li 
+             * kontroller aktivan ili ne, postavljena na aktivno stanje, potrebno je promijeniti lokalnu varijablu y rotacije
+             * ovisno i pomaku miša, osjetljivosti iz SensitivitySettingsScriptable instance i proteklog vremena.
+             * Ako je pritisnuta tipka za pucanje i prošlo je dovoljno vremena od prošlog pucanja, potrebno je pozvati metodu za pucanje i 
+             * ažurirati vrijeme posljednjeg pucanja.
+             */
         }
 
         private void Shoot()
@@ -142,38 +137,35 @@ namespace SpellFlinger.PlayScene
         private void Move(Vector2 _inputDirection, bool isGroundedFrameNormalized)
         {
             transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
-
-            Vector3 _moveDirection = transform.right * _inputDirection.x + transform.forward * _inputDirection.y;
-            _moveDirection *= _moveSpeed * Runner.DeltaTime;
-            if (_playerStats.IsSlowed) _moveDirection *= _slowAmount;
-            if (_inputDirection.x != 0 && _inputDirection.y != 0) _moveDirection /= (float)Math.Sqrt(2);
-
-            float deltaGravity = _gravity * Runner.DeltaTime;
-            yVelocity += deltaGravity;
-            if (Math.Abs(yVelocity) < deltaGravity)
-            {
-                yVelocity += _gravity * _gravityBurst;
-            }
-
-            if (_controller.isGrounded)
-            {
-                yVelocity = 0f;
-                if (inputs[4])
-                {
-                    yVelocity = _jumpSpeed;
-                    _jumpTime = Time.time;
-                    inputs[4] = false;
-                }
-            }
-
+            Vector3 _moveDirection = Vector3.zero;
             if(isGroundedFrameNormalized) _doubleJumpAvailable = true;
-            else if(inputs[4] && _doubleJumpAvailable  && Time.time - _jumpTime >= _doubleJumpDelay)
-            {
-                _doubleJumpAvailable = false;
-                yVelocity = _jumpSpeed * _doubleJumpBoost;
-                Debug.Log("Double jumped");
-                inputs[4] = false;
-            }
+
+            /*
+             * U ovoj metodu obavlja se mijenjanje pozicije lika. 
+             * U nastavku je dan opis zamišljene logike kretanja, no ako želite, možete implementirati vlastitu logiku kretanja.
+             * 
+             * Prvo se određuje horizontalni pomak. Smjer horizontalnog kretanja se određuje s pomoću varijable _input 
+             * gdje je prvi član vektora smjer lijevo-desno, a drugi naprijed nazad. Dobiveni smier se potom množi 
+             * proteklim vremenom (pošto se radi o metodi FixedUpdateNetwork, a ne FixedUpdate, ne koristi se Time.FixedDeltaTime, 
+             * nego Runner.DeltaTime), brzinom kretanja i u slučaju da je lik u usporenom stanju i koeficijentom usporenosti.
+             * Na kraju, ako je aktivno kretanje u oba smjera vektor smjera je dijagonalan, te se iz toga razloga mora podijeliti 
+             * sa korijenom od 2 kako ne bi došlo do ubrzanja. Korjenovanje je skupa akcija, stoga se koristi cache-irana lokalna 
+             * varijabla _squareRootOfTwo.
+             * 
+             * Nakon toga je potrebno odrediti vertikalnu brzinu. Prvo se od lokalne varijable vertikalne brzine oduzima
+             * vrijednost gravitacije pomnožene proteklim vremenom. Ako je nakon toga vrijednost vertikalne brzine približno 
+             * jednaka nuli, to znači da je lik dosegnuo vrhunac skoka, te se dodaje burst gravitacije kako bi lik brže krenuo 
+             * padati, što ima za posljedicu bolje korisničko iskustvo kretanja, u suprotnom se postiže osjećaj "Moon Gravity"
+             * slučaja. 
+             * 
+             * Ako je lik prizemljen (_controller.isGrounded) vertikalna brzina mu se postavlja na nula, te u slučaju da je 
+             * unesena komanda za skok vertikalna brzina se postavlja na brzinu skoka i vrijeme zadnjeg skoka se postavlja na 
+             * trenutno vrijeme.
+             * 
+             * Ako lik nije prizemljen, a dana je naredba skoka, provjerava se je li zastavica mogućnosti duplog skoka postavljena 
+             * na aktivno stanje i je li prošlo dovoljno vremena od prošlog skoka. Ako je, miče se zastavica duplog skoka i vertikalna brzina
+             * se postavlja na brzinu skoka pomnoženu boostom za dupli skok.
+             */
 
             _moveDirection = AdjustVelocityToSlope(_moveDirection);
             _moveDirection.y += yVelocity;
@@ -182,15 +174,12 @@ namespace SpellFlinger.PlayScene
 
         private Vector3 AdjustVelocityToSlope(Vector3 velocity)
         {
-            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, _slopeRaycastDistance))
+            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, _slopeRaycastDistance) && hit.collider.tag == "Ground")
             {
-                if (hit.collider.tag == "Ground")
-                {
-                    Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                    Vector3 adjustedVelocity = slopeRotation * velocity;
+                Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                Vector3 adjustedVelocity = slopeRotation * velocity;
 
-                    if (adjustedVelocity.y < 0) return adjustedVelocity;
-                }
+                if (adjustedVelocity.y < 0) return adjustedVelocity;
             }
 
             return velocity;
@@ -236,14 +225,15 @@ namespace SpellFlinger.PlayScene
 
         private IEnumerator GameEndCountdown()
         {
-            _cameraController.CameraEnabled = false;
-            _controller.enabled = false;
+            /*
+             * Na početku je potrebno postaviti privatnu varijablu instance CameraController, koja označuje je li
+             * kontroler aktivan ili ne, na neaktivno stanje i onesposobiti CharacterControler lika.
+             * Nakon toga korutina čeka neki broj sekundi, nakon kojih naznačuje da je lik spreman za respawn, poziva metodu 
+             * UiManager-a da makne ekran kraja igre i poziva metodu PlayerManager-a koja resetira sve bodove igre.
+             * Liniju return null; je potrebno zmjeniti traženom logikom.
+             */
 
-            yield return new WaitForSeconds(7);
-
-            _respawnReady = true;
-            UiManager.Instance.HideEndGameScreen();
-            PlayerManager.Instance.ResetGameStats();
+            return null;
         }
 
         public void PlayerKilled()
@@ -255,30 +245,28 @@ namespace SpellFlinger.PlayScene
 
         private IEnumerator RespawnCD()
         {
-            UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
-            _cameraController.CameraEnabled = false;
-            _controller.enabled = false;
-            DisableControllerRpc();
+            /*
+             * U ovoj metodi potrebno je aktivirati ekran smrti pozivom metode instance UiManager-a, postaviti privatnu varijablu instance CameraController, 
+             * koja označuje je li kontroler aktivan ili ne, na neaktivno stanje i onesposobiti CharacterControler lika. Također je potrebno pozvati 
+             * metode udaljenih procedura ove instance na drugim računalima koje onesposobljuju CharacterController kako bi se iskuljučio Collider i lokalno 
+             * i na drugim klijentima. Potom je potrebno čekati određeni broj sekundi, i svake sekunde ažurirati timer ekrana smrti.
+             * Nakon što istekne traženo vrijeme potrebno je naznačiti da je lik spreman za respawn.
+             * Potrebno je zamijeniti liniju return null; traženom logikom.
+             */
 
-            for (int i = 1; i < _respawnTime; i++)
-            {
-                yield return new WaitForSeconds(1);
-                UiManager.Instance.UpdateDeathTimer(_respawnTime - i);
-            }
-
-            _respawnReady = true;
-            _respawnCoroutine = null;
+            return null;
         }
 
         private void Respawn()
         {
-            _respawnReady = false;
-            _playerStats.ResetHealth();
-            UiManager.Instance.HideDeathTimer();
-            PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
-            transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
-            EnableControllerRpc();
-            _controller.enabled = true;
+            /*
+             * U ovoj metodi je potrebno postaviti sve vrijednosti potrebne za ponovnu aktivaciju lika.
+             * Potrebno je ugasiti zastavicu spremnosti za respawn, resetirati životne bodove, maknuti ekran smrti,
+             * postaviti poziciju na nasumičnu poziciju kao u metodi Spwaned, pozvati metodu udaljene procedure za 
+             * aktivaciju CharacterController komponente na instanci ovog objekta na drugim klijentima i aktivirati 
+             * lokalni CharacterController.
+             */
+
             _cameraController.CameraEnabled = true;
         }
     }

@@ -1,4 +1,4 @@
-using Fusion;
+﻿using Fusion;
 using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
 using TMPro;
@@ -84,24 +84,30 @@ namespace SpellFlinger.PlayScene
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void DealDamageRpc(int damage, PlayerStats attacker)
         {
-            if (Health - damage <= 0)
-            {
-                if(Health > 0)
-                {
-                    Deaths++;
-                    attacker.AddKillRpc();
-                    _playerCharacterController.PlayerKilled();
-                }
-                Health = 0;
-            }
-            else Health -= damage;
+            /*
+             * U ovoj metodi je potrebno smanjiti živote igrača za štetu.
+             * U slučaju da su životni bodovi prije poziva bili veći od 0, 
+             * a nakon smanjivanja padnu na nula, potrebno je povećati broj
+             * deathova igrača, obavijestiti PlayerCharacterController o smrti igrača,
+             * te povećati broj killova igrača koji je napravio štetu pozivom udaljene procedure.
+             */
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void ApplySlowRpc(float duration) => _slowDuation = duration;
+        public void ApplySlowRpc(float duration)
+        {
+            /*
+             * U ovoj metodi je potrebno aktivirati usporeno stanje postaljanjem vremena usporenosti.
+             */
+        }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void AddKillRpc() => Kills++;
+        public void AddKillRpc()
+        {
+            /*
+             * U ovoj metodi je potrebno poečati broj killova igrača koji je zadnji počinio štetu.
+             */
+        }
 
         public void ResetHealth() => Health = _maxHealth;
 

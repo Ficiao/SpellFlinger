@@ -23,33 +23,13 @@ namespace SpellFlinger.PlayScene
         {
             if (_stopped) return;
 
-            transform.Translate(_direction * Runner.DeltaTime);
-            _effectModel.transform.rotation = Quaternion.FromToRotation(transform.forward, _direction.normalized);
-
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);
-
-            foreach (Collider collider in hitColliders)
-            {
-                if (collider.tag != "Player") continue;
-
-                PlayerStats player = collider.GetComponent<PlayerStats>();
-
-                if (player.Object.StateAuthority == _ownerPlayerRef) continue;
-                if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
-
-                player.DealDamageRpc(_damage, _ownerPlayerStats);
-                player.ApplySlowRpc(_slowDuration);
-                _stopped = true;
-                Destroy(gameObject);
-
-                break;
-            }
-
-            if (!_stopped && hitColliders.Any((collider) => collider.tag == "Ground"))
-            {
-                _stopped = true;
-                Destroy(gameObject, _dissolveDelay);
-            }
+            /*
+             * U ovoj metodi je potrebno napraviti detekciju pogotka, slično kao u metodi FixedNetworkUpdate
+             * klase TeslaProjectile. Pri pogotku igrača uz štetu potrebno je pozvati metodu udaljene procedure
+             * klase PlayerStats tog igrača koja će ga usporiti na odabrano vrijeme. 
+             * U slučaju pogotka igrača potrebno je odmah uništiti objekt projektila, a ako je pogođen teren
+             * projektil je potrebno uništiti nakon odgode vremena.
+             */
         }
 
         //private void Update()

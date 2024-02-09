@@ -22,10 +22,10 @@ namespace SpellFlinger.LoginScene
         private void Awake()
         {
             /*
-             * Metodu je potrebno nadopuniti sa kodom za stvaranje Toggle objekata za izbor scene.
+             * Metodu je potrebno nadopuniti s kodom za stvaranje Toggle objekata za izbor scene.
              * Popis podataka o scenama se može dobiti iz instance LevelDataScriptable klase.
              * Stvaranje i inicijalizaciju objekata se provodi na sličan način kao stvaranje
-             * Toggle objekata za izbor oružja u Awake medoti SessionView klase.
+             * Toggle objekata za izbor oružja u Awake metodi SessionView klase.
              */
 
             _returnButton.onClick.AddListener(() => 

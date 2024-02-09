@@ -57,14 +57,14 @@ namespace SpellSlinger.Networking
         public void LeaveSession()
         {
             /*
-             * U ovoj metodi je potrebno pozvati Shutdown metodu intance NetworkRunner klase, te učitati početni ekran.
+             * U ovoj metodi je potrebno pozvati Shutdown metodu instance NetworkRunner klase, te učitati početni ekran.
              */
         }
 
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
         {
             /*
-             * U ovoj metodi je potrebno lokalno spremiti osvježenu listu soba, te osviježiti prikaz liste soba.
+             * U ovoj metodi je potrebno lokalno spremiti osvježenu listu soba, te osvježiti prikaz liste soba.
              */
         }
 

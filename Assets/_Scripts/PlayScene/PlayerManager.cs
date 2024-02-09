@@ -25,25 +25,22 @@ namespace SpellFlinger.PlayScene
 
         public void RegisterPlayer(PlayerStats player)
         {
-            _playerStats.Add(player);
-            if(_friendlyTeam == TeamType.None || player.Team != _friendlyTeam) player.SetTeamMaterial(_enemyMaterial, _enemyColor);
-            else player.SetTeamMaterial(_friendlyMaterial, _friendlyColor);
+            /*
+             * Potrebno je dodati igrača u listu registriranih, te mu postaviti timsku boju slično 
+             * načinu kako se to obavlja u metodi SetFriendlyTeam.
+             */
         }
 
         public void UnregisterPlayer(PlayerStats player) => _playerStats.Remove(player);
 
         public TeamType GetTeamWithLessPlayers()
         {
-            int teamACount = 0;
-            int teamBCount = 0;
+            /*
+             * Potrebno je zamijeniti liniju return (TeamType)(-1); tako da metoda vraća
+             * TeamType s timom koji ima manje igrača.
+             */
 
-            _playerStats.ForEach((player) =>
-            {
-                if (player.Team == TeamType.TeamA) teamACount++;
-                else if (player.Team == TeamType.TeamB) teamBCount++;
-            });
-
-            return teamACount <= teamBCount ? TeamType.TeamA : TeamType.TeamB;
+            return (TeamType)(-1);
         }
 
         public void SetFriendlyTeam(TeamType friendlyTeam)
