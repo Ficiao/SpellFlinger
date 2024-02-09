@@ -21,11 +21,12 @@ namespace SpellFlinger.LoginScene
 
         private void Awake()
         {
-            foreach(var data in LevelDataScriptable.Instance.Levels)
-            {
-                LevelSelectionToggle selectionToggle = Instantiate(_levelSelectionTogglePrefab, _levelSelectionContainer.transform);
-                selectionToggle.ShowLevel(data.LevelType, _levelSelectionContainer, data.LevelImage, (levelType) => _selectedLevelType = levelType);
-            }
+            /*
+             * Metodu je potrebno nadopuniti sa kodom za stvaranje Toggle objekata za izbor scene.
+             * Popis podataka o scenama se može dobiti iz instance LevelDataScriptable klase.
+             * Stvaranje i inicijalizaciju objekata se provodi na sličan način kao stvaranje
+             * Toggle objekata za izbor oružja u Awake medoti SessionView klase.
+             */
 
             _returnButton.onClick.AddListener(() => 
             {
@@ -38,6 +39,11 @@ namespace SpellFlinger.LoginScene
 
         private void CreateRoom()
         {
+            /*  
+             *  Potrebno je pozvati metodu instance FusionConnection za stvaranje sobe, te joj poslati potrebne parametre.
+             */
+
+
             GameModeType gameMode = _teamDeathMatchToggle.isOn ? GameModeType.TDM : GameModeType.DM;
             LevelType level = _selectedLevelType;
             FusionConnection.Instance.JoinSession(_roomNameInput.text, gameMode, level);

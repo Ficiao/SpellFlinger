@@ -45,7 +45,8 @@ namespace SpellFlinger.LoginScene
 
         public void UpdateSessionList()
         {
-            /* U ovoj metodi potrebno je očistiti lokalnu listu likaza sesija i uništiti njihove game objekte.
+            /* 
+             * U ovoj metodi potrebno je očistiti lokalnu listu likaza sesija i uništiti njihove game objekte.
              * Potom koristeći listu sessija koja se dohvaća iz Singleton instance klase FusionConnection je potrebo osviježiti listu.
              * Za svaku postojeću sesiju potrebno je stvoriti novu instancu SessionDataView prefab-a, te ju inicijalizirati i dodati u lokalnu listu.
              * Za roditelja tih objekata potrebno je postaviti lokalnu referencu na kontejner sesija. 

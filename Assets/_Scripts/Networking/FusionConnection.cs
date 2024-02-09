@@ -56,18 +56,16 @@ namespace SpellSlinger.Networking
 
         public void LeaveSession()
         {
-            _runner.Shutdown();
-            SceneManager.LoadScene(0);
+            /*
+             * U ovoj metodi je potrebno pozvati Shutdown metodu intance NetworkRunner klase, te učitati početni ekran.
+             */
         }
 
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
         {
-            if(_sessions == null || (_sessions.Count == 0 && sessionList.Count > 0))
-            {
-                _sessions = sessionList;
-                SessionView.Instance.UpdateSessionList();
-            }
-            else _sessions = sessionList;
+            /*
+             * U ovoj metodi je potrebno lokalno spremiti osvježenu listu soba, te osviježiti prikaz liste soba.
+             */
         }
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
