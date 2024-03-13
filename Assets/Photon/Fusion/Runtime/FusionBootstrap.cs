@@ -1,23 +1,23 @@
-namespace Fusion
-{
-    using System;
-    using Fusion.Sockets;
-    using System.Collections;
-    using System.Threading.Tasks;
-    using UnityEngine;
-    using UnityEngine.SceneManagement;
-    using System.Collections.Generic;
-    using System.Linq;
+namespace Fusion {
+  using System;
+  using Fusion.Sockets;
+  using System.Collections;
+  using System.Threading.Tasks;
+  using UnityEngine;
+  using UnityEngine.SceneManagement;
+  using System.Collections.Generic;
+  using System.Linq;
+  using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
-    using UnityEditor;
+  using UnityEditor;
 #endif
 
-    /// <summary>
-    /// A Fusion prototyping class for starting up basic networking. Add this component to your startup scene, and supply a <see cref="RunnerPrefab"/>.
-    /// Can be set to automatically startup the network, display an in-game menu, or allow simplified start calls like <see cref="StartHost()"/>.
-    /// </summary>
-    [DisallowMultipleComponent]
+  /// <summary>
+  /// A Fusion prototyping class for starting up basic networking. Add this component to your startup scene, and supply a <see cref="RunnerPrefab"/>.
+  /// Can be set to automatically startup the network, display an in-game menu, or allow simplified start calls like <see cref="StartHost()"/>.
+  /// </summary>
+  [DisallowMultipleComponent]
   [AddComponentMenu("Fusion/Fusion Bootstrap")]
   [ScriptHelp(BackColor = ScriptHeaderBackColor.Steel)]
   public class FusionBootstrap : Fusion.Behaviour {
@@ -192,7 +192,7 @@ namespace Fusion
       var config = NetworkProjectConfig.Global;
       var isMultiPeer = config.PeerMode == NetworkProjectConfig.PeerModes.Multiple;
 
-      var existingRunner = FindObjectOfType<NetworkRunner>();
+      var existingRunner = FindFirstObjectByType<NetworkRunner>();
 
       if (existingRunner && existingRunner != RunnerPrefab) {
         if (existingRunner.State != NetworkRunner.States.Shutdown) {

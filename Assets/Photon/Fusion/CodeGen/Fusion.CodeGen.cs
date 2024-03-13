@@ -9,18 +9,19 @@
 
 #region Assets/Photon/Fusion/CodeGen/ForLoopMacro.cs
 
-#if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Collections.Generic;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
-    using static ILWeaverOpCodes;
-    using MethodBody = Mono.Cecil.Cil.MethodBody;
+﻿#if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
+namespace Fusion.CodeGen {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Reflection;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
+  using static ILWeaverOpCodes;
+  using MethodBody = Mono.Cecil.Cil.MethodBody;
 
-    public readonly struct NewArrayWithLengthEqualToOtherArrayOrZero : ILProcessorMacro {
+  public readonly struct NewArrayWithLengthEqualToOtherArrayOrZero : ILProcessorMacro {
     public readonly Action<ILProcessor> GetArray;
     public readonly TypeReference       ArrayElementType;
 
@@ -185,12 +186,11 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
-    using System;
-    using Mono.Cecil.Cil;
+namespace Fusion.CodeGen {
+  using System;
+  using Mono.Cecil.Cil;
 
-    internal struct ILMacroStruct : ILProcessorMacro {
+  internal struct ILMacroStruct : ILProcessorMacro {
     Action<ILProcessor> generator;
     Instruction[] instructions;
     public static implicit operator ILMacroStruct(Instruction[] instructions) {
@@ -231,18 +231,17 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaver.Cache.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
 
-    using System;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
-    using static Fusion.CodeGen.ILWeaverOpCodes;
+  using System;
+  using System.Linq;
+  using System.Runtime.CompilerServices;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
+  using static Fusion.CodeGen.ILWeaverOpCodes;
 
-    partial class ILWeaver {
+  partial class ILWeaver {
 
     private TypeReference MakeFixedBuffer(ILWeaverAssembly asm, int wordCount) {
 
@@ -470,14 +469,24 @@ namespace Fusion.CodeGen
 
         getElementWordCountMethod.AddAttribute<MethodImplAttribute, MethodImplOptions>(asm, MethodImplOptions.AggressiveInlining);
         getElementWordCountMethod.AddAttribute<PreserveInPluginAttribute>(asm);
+        getElementWordCountMethod.AddTo(readerWriterType);
 
+        var getElementHashCodeMethod = new MethodDefinition($"{namePrefix}GetElementHashCode",
+          visibility | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
+          asm.Import(typeof(int)));
+        
+        getElementHashCodeMethod.Parameters.Add(new ParameterDefinition("val", ParameterAttributes.None, elementType));
+        getElementHashCodeMethod.AddAttribute<MethodImplAttribute, MethodImplOptions>(asm, MethodImplOptions.AggressiveInlining);
+        getElementHashCodeMethod.AddAttribute<PreserveInPluginAttribute>(asm);
+        getElementHashCodeMethod.AddTo(readerWriterType);
+        
         if (isExplicit) {
           readMethod.Overrides.Add(interfaceType.GetGenericInstanceMethodOrThrow(nameof(IElementReaderWriter<int>.Read)));
           readRefMethod.Overrides.Add(interfaceType.GetGenericInstanceMethodOrThrow(nameof(IElementReaderWriter<int>.ReadRef)));
           writeMethod.Overrides.Add(interfaceType.GetGenericInstanceMethodOrThrow(nameof(IElementReaderWriter<int>.Write)));
           getElementWordCountMethod.Overrides.Add(interfaceType.GetGenericInstanceMethodOrThrow(nameof(IElementReaderWriter<int>.GetElementWordCount)));
+          getElementHashCodeMethod.Overrides.Add(interfaceType.GetGenericInstanceMethodOrThrow(nameof(IElementReaderWriter<int>.GetElementHashCode)));
         }
-
 
         Action<ILProcessor> addressGetter = il => {
           il.Append(Instruction.Create(OpCodes.Ldarg_1));
@@ -487,16 +496,25 @@ namespace Fusion.CodeGen
           il.Append(Instruction.Create(OpCodes.Add));
         };
 
+  
         EmitRead(asm, readMethod.Body.GetILProcessor(), elementType, readerWriterType, member, addressGetter, emitRet: true);
         EmitRead(asm, readRefMethod.Body.GetILProcessor(), readRefMethod.ReturnType, readerWriterType, member, addressGetter, emitRet: true, throwForNonUnmanagedRefs: true);
         EmitWrite(asm, writeMethod.Body.GetILProcessor(), elementType, readerWriterType, member, addressGetter, OpCodes.Ldarg_3, emitRet: true);
+        EmitGetHashCode(asm, getElementHashCodeMethod.Body.GetILProcessor(), elementType, readerWriterType, member, addressGetter, 
+          valueGetter: il => {
+            il.Append(Ldarg_1());
+          },
+          valueAddrGetter: il => {
+            il.Append(Ldarga_S(getElementHashCodeMethod.Parameters[0]));
+          },
+          emitRet: true);
 
-        getElementWordCountMethod.AddTo(readerWriterType);
         {
           var il = getElementWordCountMethod.Body.GetILProcessor();
           il.Append(Ldc_I4(elementWordCount));
           il.Append(Ret());
         }
+        
       }
 
       var typeInfo = TypeRegistry.GetInfo(elementType);
@@ -594,21 +612,21 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
-    using Mono.Collections.Generic;
-    using static Fusion.CodeGen.ILWeaverOpCodes;
-    using MethodAttributes = Mono.Cecil.MethodAttributes;
-    using ParameterAttributes = Mono.Cecil.ParameterAttributes;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Runtime.CompilerServices;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
+  using Mono.Collections.Generic;
+  using static Fusion.CodeGen.ILWeaverOpCodes;
+  using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
+  using MethodAttributes = Mono.Cecil.MethodAttributes;
+  using ParameterAttributes = Mono.Cecil.ParameterAttributes;
 
-    public unsafe partial class ILWeaver {
+  public unsafe partial class ILWeaver {
 
     Dictionary<TypeReference, int> _rpcCount = new Dictionary<TypeReference, int>(new MemberReferenceFullNameComparer());
 
@@ -703,6 +721,19 @@ namespace Fusion.CodeGen
           EmitElementReaderWriterLoad(il, MakeElementReaderWriter(asm, declaringType, member, type));
         };
         TypeRegistry.EmitWrite(type, il, ctx, member);
+        if (emitRet) {
+          il.Append(Ret());
+        }
+      }
+    }
+    
+    void EmitGetHashCode(ILWeaverAssembly asm, ILProcessor il, TypeReference type, TypeReference declaringType, ICustomAttributeProvider member, Action<ILProcessor> addressGetter, Action<ILProcessor> valueGetter, Action<ILProcessor> valueAddrGetter, bool emitRet = false) {
+      
+      using (var ctx = new MethodContext(asm, il.Body.Method, addressGetter: null, valueGetter: valueGetter, valueAddrGetter: valueAddrGetter)) {
+        ctx.LoadElementReaderWriterImpl = (il, type, member) => {
+          EmitElementReaderWriterLoad(il, MakeElementReaderWriter(asm, declaringType, member, type));
+        };
+        TypeRegistry.EmitGetHashCode(type, il, ctx, member);
         if (emitRet) {
           il.Append(Ret());
         }
@@ -1929,16 +1960,15 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaver.INetworkedStruct.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Runtime.CompilerServices;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using static Fusion.CodeGen.ILWeaverOpCodes;
-    using FieldAttributes = Mono.Cecil.FieldAttributes;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Runtime.CompilerServices;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using static Fusion.CodeGen.ILWeaverOpCodes;
+  using FieldAttributes = Mono.Cecil.FieldAttributes;
 
-    unsafe partial class ILWeaver {
+  unsafe partial class ILWeaver {
 
     const int WordSize = Allocator.REPLICATE_WORD_SIZE;
     NetworkTypeInfoRegistry TypeRegistry;
@@ -2173,24 +2203,24 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaver.NetworkBehaviour.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using static Fusion.CodeGen.ILWeaverOpCodes;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
-    using FieldAttributes = Mono.Cecil.FieldAttributes;
-    using MethodAttributes = Mono.Cecil.MethodAttributes;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Runtime.CompilerServices;
+  using static Fusion.CodeGen.ILWeaverOpCodes;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
+  using FieldAttributes = Mono.Cecil.FieldAttributes;
+  using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 #if UNITY_EDITOR
-    using UnityEngine.Scripting;
+  using UnityEngine;
+  using UnityEngine.Scripting;
 #endif
 
-    unsafe partial class ILWeaver {
+  unsafe partial class ILWeaver {
 
     FieldDefinition AddNetworkBehaviourBackingField(PropertyDefinition property) {
 
@@ -2896,16 +2926,15 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaverAssembly.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Reflection;
 
-    using Mono.Cecil;
+  using Mono.Cecil;
 
-    public class ILWeaverImportedType {
+  public class ILWeaverImportedType {
     public Type                 ClrType;
     public ILWeaverAssembly     Assembly;
     public List<TypeDefinition> BaseDefinitions;
@@ -3135,14 +3164,13 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_WEAVER_ILPOSTPROCESSOR && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using Mono.Cecil;
+namespace Fusion.CodeGen {
+  using System.Collections.Generic;
+  using System.IO;
+  using System.Linq;
+  using Mono.Cecil;
 
-    internal class ILWeaverAssemblyResolver : IAssemblyResolver {
+  internal class ILWeaverAssemblyResolver : IAssemblyResolver {
     private List<string> _lookInDirectories;
     private Dictionary<string, string> _assemblyNameToPath;
     private Dictionary<string, AssemblyDefinition> _resolvedAssemblies = new Dictionary<string, AssemblyDefinition>();
@@ -3327,25 +3355,24 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaverBindings.ILPostProcessor.cs
 
 #if FUSION_WEAVER_ILPOSTPROCESSOR
-namespace Fusion.CodeGen
-{
-    using System;
-    using Unity.CompilationPipeline.Common.ILPostProcessing;
+namespace Fusion.CodeGen {
+  using System;
+  using Unity.CompilationPipeline.Common.ILPostProcessing;
 
 #if FUSION_WEAVER
-    using System.Collections.Generic;
-    using Unity.CompilationPipeline.Common.Diagnostics;
+  using System.Collections.Generic;
+  using Unity.CompilationPipeline.Common.Diagnostics;
 #if FUSION_HAS_MONO_CECIL
-    using System.IO;
-    using System.Linq;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using System.Reflection;
+  using System.IO;
+  using System.Linq;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using System.Reflection;
 
-    using System.Runtime.Serialization.Json;
-    using System.Xml.Linq;
+  using System.Runtime.Serialization.Json;
+  using System.Xml.Linq;
 
-    class ILWeaverBindings : ILPostProcessor {
+  class ILWeaverBindings : ILPostProcessor {
 
     const string ConfigPathCachePath = "Temp/FusionILWeaverConfigPath.txt";
     const string MainAssemblyName = "Assembly-CSharp";
@@ -3814,12 +3841,11 @@ namespace Fusion.CodeGen {
 
 #region Assets/Photon/Fusion/CodeGen/ILWeaverException.cs
 
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Diagnostics;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Diagnostics;
 
-    public class ILWeaverException : Exception {
+  public class ILWeaverException : Exception {
     public ILWeaverException(string error) : base(error) {
     }
 
@@ -3842,17 +3868,16 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaverExtensions.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
 
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using BindingFlags = System.Reflection.BindingFlags;
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using BindingFlags = System.Reflection.BindingFlags;
 
-    public static class ILWeaverExtensions {
+  public static class ILWeaverExtensions {
 
     public static bool IsIntegral(this TypeReference type) {
       switch (type.MetadataType) {
@@ -3888,6 +3913,37 @@ namespace Fusion.CodeGen
           return sizeof(float);
         case MetadataType.Double:
           return sizeof(double);
+        default:
+          throw new ArgumentException($"Unknown primitive type: {type}", nameof(type));
+      }
+    }
+    
+    public static Type GetPrimitiveType(this TypeReference type) {
+      switch (type.MetadataType) {
+        case MetadataType.Byte:
+          return typeof(byte);
+        case MetadataType.SByte:
+          return typeof(sbyte);
+        case MetadataType.UInt16:
+          return typeof(ushort);
+        case MetadataType.Int16:
+          return typeof(short);
+        case MetadataType.UInt32:
+          return typeof(uint);
+        case MetadataType.Int32:
+          return typeof(int);
+        case MetadataType.UInt64:
+          return typeof(ulong);
+        case MetadataType.Int64:
+          return typeof(long);
+        case MetadataType.Single:
+          return typeof(float);
+        case MetadataType.Double:
+          return typeof(double);
+        case MetadataType.Boolean:
+          return typeof(bool);
+        case MetadataType.Char:
+          return typeof(char);
         default:
           throw new ArgumentException($"Unknown primitive type: {type}", nameof(type));
       }
@@ -4574,15 +4630,14 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
 
-    using System;
-    using System.Diagnostics;
-    using System.Runtime.CompilerServices;
-    using Mono.Cecil;
+  using System;
+  using System.Diagnostics;
+  using System.Runtime.CompilerServices;
+  using Mono.Cecil;
 
-    public interface ILWeaverLogger {
+  public interface ILWeaverLogger {
     void Log(LogType logType, string message, string filePath, int lineNumber);
     void Log(Exception ex);
   }
@@ -4744,13 +4799,12 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_WEAVER_ILPOSTPROCESSOR && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Collections.Generic;
-    using Unity.CompilationPipeline.Common.Diagnostics;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Collections.Generic;
+  using Unity.CompilationPipeline.Common.Diagnostics;
 
-    class ILWeaverLoggerDiagnosticMessages : ILWeaverLogger {
+  class ILWeaverLoggerDiagnosticMessages : ILWeaverLogger {
 
     public List<DiagnosticMessage> Messages { get; } = new List<DiagnosticMessage>();
 
@@ -4808,12 +4862,11 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
 
-    using System;
+  using System;
 
-    public class ILWeaverLoggerUnityDebug : ILWeaverLogger {
+  public class ILWeaverLoggerUnityDebug : ILWeaverLogger {
 
     public void Log(LogType logType, string message, string filePath, int lineNumber) {
       switch (logType) {
@@ -4846,28 +4899,29 @@ namespace Fusion.CodeGen
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
 
-    using System;
-    using System.Collections.Generic;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
-    using static Fusion.CodeGen.ILWeaverOpCodes;
+  using System;
+  using System.Collections.Generic;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
+  using static Fusion.CodeGen.ILWeaverOpCodes;
 
-    class MethodContext : IDisposable {
+  class MethodContext : IDisposable {
 
     public Action<ILProcessor, TypeReference, ICustomAttributeProvider> LoadElementReaderWriterImpl;
     private Action<ILProcessor> _addressGetter;
     private Dictionary<(string, string), VariableDefinition> _fields = new Dictionary<(string, string), VariableDefinition>();
     private bool _runnerIsLdarg0 = false;
     protected Action<ILProcessor> _valueGetter;
+    protected Action<ILProcessor> _valueAddrGetter;
     private TargetVariableAddrInfo _targetVariable;
 
     public MethodContext(ILWeaverAssembly assembly, MethodDefinition method, bool staticRunnerAccessor = false,
       Action<ILProcessor> addressGetter = null,
-      Action<ILProcessor> valueGetter = null) {
+      Action<ILProcessor> valueGetter = null,
+      Action<ILProcessor> valueAddrGetter = null) {
       if (assembly == null) {
         throw new ArgumentNullException(nameof(assembly));
       }
@@ -4880,6 +4934,7 @@ namespace Fusion.CodeGen
       this._runnerIsLdarg0 = staticRunnerAccessor;
       this._addressGetter = addressGetter;
       this._valueGetter = valueGetter;
+      this._valueAddrGetter = valueAddrGetter;
     }
 
     public ILWeaverAssembly Assembly { get; private set; }
@@ -4971,6 +5026,9 @@ namespace Fusion.CodeGen
     }
 
     public virtual ILMacroStruct LoadValue() => _valueGetter;
+    public virtual ILMacroStruct LoadValueAddr() => _valueAddrGetter;
+    public bool HasValueGetter => _valueGetter != null;
+    public bool HasValueAddrGetter => _valueAddrGetter != null;
 
     public ValueGetterScope ValueGetter(Action<ILProcessor> valueGetter) => new ValueGetterScope(this, valueGetter);
 
@@ -5222,13 +5280,13 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaverOpCodes.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
+  using System.Reflection;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using MethodBody = Mono.Cecil.Cil.MethodBody;
 
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-
-    static class ILWeaverOpCodes {
+  static class ILWeaverOpCodes {
     // utils
     public static Instruction Nop()    => Instruction.Create(OpCodes.Nop);
     public static Instruction Ret()    => Instruction.Create(OpCodes.Ret);
@@ -5338,6 +5396,8 @@ namespace Fusion.CodeGen
     public static Instruction Ldarg_1() => Instruction.Create(OpCodes.Ldarg_1);
     public static Instruction Ldarg_2() => Instruction.Create(OpCodes.Ldarg_2);
     public static Instruction Ldarg_3() => Instruction.Create(OpCodes.Ldarg_3);
+    
+    public static Instruction Ldarga_S(ParameterDefinition p) => Instruction.Create(OpCodes.Ldarga_S, p);
 
     // starg
 
@@ -5522,11 +5582,10 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/ILWeaverSettings.cs
 
 #if FUSION_WEAVER
-namespace Fusion.CodeGen
-{
-    using System;
+namespace Fusion.CodeGen {
+  using System;
 
-    public partial class ILWeaverSettings {
+  public partial class ILWeaverSettings {
 
     public static string DefaultConfigPath {
       get {
@@ -5561,12 +5620,11 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/InstructionEqualityComparer.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System.Collections.Generic;
-    using Mono.Cecil.Cil;
+namespace Fusion.CodeGen {
+  using System.Collections.Generic;
+  using Mono.Cecil.Cil;
 
-    internal class InstructionEqualityComparer : IEqualityComparer<Instruction> {
+  internal class InstructionEqualityComparer : IEqualityComparer<Instruction> {
     public bool Equals(Instruction x, Instruction y) {
       if (x.OpCode != y.OpCode) {
         return false;
@@ -5599,12 +5657,11 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/MemberReferenceFullNameComparer.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System.Collections.Generic;
-    using Mono.Cecil;
+namespace Fusion.CodeGen {
+  using System.Collections.Generic;
+  using Mono.Cecil;
 
-    class MemberReferenceFullNameComparer : IEqualityComparer<MemberReference> {
+  class MemberReferenceFullNameComparer : IEqualityComparer<MemberReference> {
     bool IEqualityComparer<MemberReference>.Equals(MemberReference x, MemberReference y) {
       if ( x == y ) {
         return true;
@@ -5641,24 +5698,24 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/MonoCecilExtensions.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
+namespace Fusion.CodeGen {
 
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
-    using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
-    using MethodAttributes = Mono.Cecil.MethodAttributes;
-    using MethodBody = Mono.Cecil.Cil.MethodBody;
+  using System;
+  using System.Collections.Generic;
+  using System.Diagnostics;
+  using System.Linq;
+  using System.Linq.Expressions;
+  using System.Reflection;
+  using System.Runtime.CompilerServices;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
+  using UnityEditor;
+  using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
+  using MethodAttributes = Mono.Cecil.MethodAttributes;
+  using MethodBody = Mono.Cecil.Cil.MethodBody;
 
-    public static class MonoCecilExtensions {
+  public static class MonoCecilExtensions {
     public static MethodDefinition AddDefaultConstructor(this TypeDefinition type, Action<ILProcessor> initializers = null) {
       var methodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
       var method = new MethodDefinition(".ctor", methodAttributes, type.Module.ImportReference(typeof(void)));
@@ -6169,14 +6226,14 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/NetworkTypeInfo.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using static ILWeaverOpCodes;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Linq;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using static ILWeaverOpCodes;
 
-    [Flags]
+  [Flags]
   public enum NetworkTypeInfoFlags {
     IsTriviallyCopyable = 1 << 0,
     CantBeUsedInStructs = 1 << 1,
@@ -6198,6 +6255,7 @@ namespace Fusion.CodeGen
       EmitDelegate read = null, 
       EmitDelegate write = null, 
       EmitDelegate compactByteCount = null,
+      EmitDelegate getHashCode = null,
       GetMemberWordCountDelegate wordCount = null,
       int typeByteSize = -1,
       GetCapacityDelegate capacity = null,
@@ -6216,6 +6274,7 @@ namespace Fusion.CodeGen
       return new NetworkTypeInfo(type, flags) {
         _emitRead              = read,
         _emitWrite             = write,
+        _emitGetHashCode       = getHashCode,
         _unitySerializableType = unitySerializableType,
         _typeByteSize          = typeByteSize,
         _getMemberWordCount    = wordCount,
@@ -6259,6 +6318,7 @@ namespace Fusion.CodeGen
     private EmitDelegate                     _emitWrite;
     private EmitDelegate                     _emitRead;
     private EmitDelegate                     _emitRpcByteCount;
+    private EmitDelegate                     _emitGetHashCode;
     private GetMemberWordCountDelegate       _getMemberWordCount;
     private GetCapacityDelegate              _getCapacity;
     private GetUnitySerializableTypeDelegate _unitySerializableType;
@@ -6343,6 +6403,36 @@ namespace Fusion.CodeGen
       }
     }
 
+    internal virtual void EmitGetHashCode(ILProcessor il, MethodContext context, ICustomAttributeProvider member) {
+      if (_emitGetHashCode != null) {
+        _emitGetHashCode(member, il, context);
+      } else {
+        var tmp = context.AddVariable(TypeRef);
+
+        if (context.HasValueAddrGetter) {
+          il.AppendMacro(context.LoadValueAddr());
+        } else {
+          il.AppendMacro(context.LoadValue());
+          il.Append(Stloc(tmp));
+          il.Append(Ldloca(tmp));
+        }
+
+        if (TypeRef.IsPrimitive) {
+          var getHashCode = context.Assembly.Import(TypeRef.GetPrimitiveType().GetMethod(nameof(object.GetHashCode)));
+          il.Append(Call(getHashCode));
+        } else {
+          if (!TypeRef.IsValueType) {
+            throw new InvalidOperationException($"Expected {TypeRef} to be a value type");
+          }
+          var getHashCode = context.Assembly.Object.GetMethod(nameof(object.GetHashCode));
+          if (TypeRef.IsValueType) {
+            il.Append(Instruction.Create(OpCodes.Constrained, TypeRef));
+          }
+          il.Append(Callvirt(getHashCode));
+        }
+      }
+    }
+    
     internal virtual void EmitRead(ILProcessor il, MethodContext context, ICustomAttributeProvider member) {
       if (_emitRead != null) {
         _emitRead(member, il, context);
@@ -6366,24 +6456,25 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/NetworkTypeInfoRegistry.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Mono.Cecil;
-    using Mono.Cecil.Cil;
-    using Mono.Cecil.Rocks;
+namespace Fusion.CodeGen {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Reflection;
+  using Mono.Cecil;
+  using Mono.Cecil.Cil;
+  using Mono.Cecil.Rocks;
 
 #if UNITY_EDITOR
-    using UnityEngine;
+  using UnityEngine;
 #endif
 
-    using static ILWeaverOpCodes;
-    using FieldAttributes = Mono.Cecil.FieldAttributes;
-    using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
+  using static ILWeaverOpCodes;
+  using Behaviour = Fusion.Behaviour;
+  using FieldAttributes = Mono.Cecil.FieldAttributes;
+  using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
 
-    public class NetworkTypeInfoRegistry {
+  public class NetworkTypeInfoRegistry {
 
     public delegate int CalculateWordCountDelegate(TypeReference type);
 
@@ -6406,8 +6497,9 @@ namespace Fusion.CodeGen
     public int GetPropertyWordCount(PropertyDefinition property) => GetMemberWordCount(property.PropertyType, property, property.DeclaringType);
     public int GetMemberWordCount(TypeReference type, ICustomAttributeProvider member, TypeReference declaringType) => GetInfo(type).GetMemberWordCount(member, declaringType);
 
-    internal void EmitRead(TypeReference type, ILProcessor il, MethodContext context, ICustomAttributeProvider member) => GetInfo(type).EmitRead(il, context, member);
-    internal void EmitWrite(TypeReference type, ILProcessor il, MethodContext context, ICustomAttributeProvider member) => GetInfo(type).EmitWrite(il, context, member);
+    internal void EmitRead(TypeReference type, ILProcessor il, MethodContext context, ICustomAttributeProvider member)                           => GetInfo(type).EmitRead(il, context, member);
+    internal void EmitWrite(TypeReference type, ILProcessor il, MethodContext context, ICustomAttributeProvider member)                          => GetInfo(type).EmitWrite(il, context, member);
+    internal void EmitGetHashCode(TypeReference type, ILProcessor il, MethodContext context, ICustomAttributeProvider member)                    => GetInfo(type).EmitGetHashCode(il, context, member);
     internal void EmitRpcByteCount(TypeReference type, ILProcessor il, MethodContext context, ICustomAttributeProvider member, bool wordAligned) => GetInfo(type).EmitRpcByteCount(il, context, member, wordAligned);
 
 
@@ -6578,15 +6670,15 @@ namespace Fusion.CodeGen
       if (WrapInfo.MaxByteCount <= 0 && !WrapInfo.WrapperTypeInfo.CanBeUsedInRpc) {
         flags |= NetworkTypeInfoFlags.CantBeUsedInRpcs;
       }
-      if (WrapInfo.NeedsRunner) {
+      if (WrapInfo.WrapNeedsRunner || WrapInfo.UnwrapNeedsRunner) {
         flags |= NetworkTypeInfoFlags.CantBeUsedInStructs;
       }
-    
+
       return NetworkTypeInfo.Create(type,
         wordCount: (member, declaringType) => {
           if (WrapInfo.MaxByteCount > 0) {
             return Native.WordCount(WrapInfo.MaxByteCount, Allocator.REPLICATE_WORD_SIZE);
-          } else { 
+          } else {
             return WrapInfo.WrapperTypeInfo.GetMemberWordCount(member, declaringType);
           }
         },
@@ -6596,7 +6688,7 @@ namespace Fusion.CodeGen
 
             var nop = il.AppendReturn(Nop());
 
-            if (WrapInfo.NeedsRunner) {
+            if (WrapInfo.UnwrapNeedsRunner) {
               il.AppendMacro(context.LoadRunner());
             }
 
@@ -6626,9 +6718,10 @@ namespace Fusion.CodeGen
             il.Remove(nop);
 
           } else {
-            if (WrapInfo.NeedsRunner) {
+            if (WrapInfo.UnwrapNeedsRunner) {
               il.AppendMacro(context.LoadRunner());
             }
+
             il.AppendMacro(context.LoadAddress());
             il.Append(Ldind_or_Ldobj(WrapInfo.WrapperType));
             il.Append(Call(WrapInfo.UnwrapMethod.GetCallable()));
@@ -6648,9 +6741,10 @@ namespace Fusion.CodeGen
 
           // actual args start here
 
-          if (WrapInfo.NeedsRunner) {
+          if (WrapInfo.WrapNeedsRunner) {
             il.AppendMacro(context.LoadRunner());
           }
+
           il.AppendMacro(context.LoadValue());
           if (WrapInfo.IsRaw) {
             il.AppendMacro(context.LoadAddress());
@@ -6664,6 +6758,42 @@ namespace Fusion.CodeGen
           } else {
             il.Append(Stind_or_Stobj(WrapInfo.WrapperType));
             il.AppendMacro(context.AddOffset(WrapInfo.WrapperTypeInfo.StaticByteCount));
+          }
+        },
+        getHashCode: (member, il, context) => {
+          
+          if (WrapInfo.IsRaw) {
+            if (WrapInfo.WrapNeedsRunner) {
+              il.AppendMacro(context.LoadRunner());
+            }
+            il.AppendMacro(context.LoadValue());
+            
+            var bufferVariable = context.AddVariable(context.Assembly.Import(typeof(byte)).MakePointerType());
+            var bytesWrittenVariable = context.AddVariable(context.Assembly.Import(typeof(int)));
+            il.Append(Ldc_I4(WrapInfo.MaxByteCount));
+            il.Append(Conv_U());
+            il.Append(Instruction.Create(OpCodes.Localloc));
+            il.Append(Stloc(bufferVariable));
+            il.Append(Ldloc(bufferVariable));
+            
+            il.Append(Call(WrapInfo.WrapMethod.GetCallable()));
+            il.Append(Stloc(bytesWrittenVariable));
+            
+            il.Append(Ldloc(bufferVariable));
+            il.Append(Ldloc(bytesWrittenVariable));
+
+            var getArrayHashCode = context.Assembly.ReadWriteUtils.GetMethod(nameof(ReadWriteUtilsForWeaver.GetByteArrayHashCode), argsCount: 2);
+            il.Append(Call(getArrayHashCode));
+            
+          } else {
+            using var nestedContext = new MethodContext(context.Assembly, context.Method, valueGetter: il => {
+              if (WrapInfo.WrapNeedsRunner) {
+                il.AppendMacro(context.LoadRunner());
+              }
+              il.AppendMacro(context.LoadValue());
+              il.Append(Call(WrapInfo.WrapMethod.GetCallable()));
+            });
+            WrapInfo.WrapperTypeInfo.EmitGetHashCode(il, nestedContext, member);
           }
         },
         flags: flags
@@ -6911,6 +7041,7 @@ namespace Fusion.CodeGen
         var getUtf8ByteCount = _module.ImportReference(readWriteUtils.GetMethodOrThrow(nameof(ReadWriteUtilsForWeaver.GetByteCountUtf8NoHash), 1));
         var writeUtf8        = _module.ImportReference(readWriteUtils.GetMethodOrThrow(nameof(ReadWriteUtilsForWeaver.WriteStringUtf8NoHash), 2));
         var readUtf8         = _module.ImportReference(readWriteUtils.GetMethodOrThrow(nameof(ReadWriteUtilsForWeaver.ReadStringUtf8NoHash), 2));
+        var getHashCode = _module.ImportReference(readWriteUtils.GetMethodOrThrow(nameof(ReadWriteUtilsForWeaver.GetStringHashCode), 2));
 
         var readNoHash  = _module.ImportReference(readWriteUtils.GetMethodOrThrow(nameof(ReadWriteUtilsForWeaver.ReadStringUtf32NoHash), 3));
         var writeNoHash = _module.ImportReference(readWriteUtils.GetMethodOrThrow(nameof(ReadWriteUtilsForWeaver.WriteStringUtf32NoHash), 3));
@@ -6988,6 +7119,11 @@ namespace Fusion.CodeGen
 
             il.AppendMacro(context.AddOffset());
           },
+          getHashCode: (member, il, context) => {
+            il.AppendMacro(context.LoadValue());
+            il.Append(Ldc_I4(GetCapacity(member, DefaultStringCapacity)));
+            il.Append(Call(getHashCode));
+          },
           compactByteCount: (member, il, context) => {
             il.AppendMacro(context.LoadValue());
             il.Append(Call(getUtf8ByteCount));
@@ -7031,15 +7167,15 @@ namespace Fusion.CodeGen
 
       int rawByteCount = 0;
 
-      bool needsRunner = false;
-      int argsStart = 0;
-
+      bool wrapNeedsRunner = false;
+      
       if (definition.GetSingleOrDefaultMethodWithAttribute<NetworkSerializeMethodAttribute>(out var wrapAttribute, out var wrapMethod)) {
+        int argsStart = 0;
         wrapAttribute.TryGetAttributeProperty<int>(nameof(NetworkSerializeMethodAttribute.MaxSize), out rawByteCount);
 
         try {
           if (wrapMethod.ThrowIfParameterCountLessThan(1).Parameters[0].ParameterType.Is<NetworkRunner>()) {
-            needsRunner = true;
+            wrapNeedsRunner = true;
             argsStart = 1;
           }
 
@@ -7062,14 +7198,22 @@ namespace Fusion.CodeGen
       }
 
       bool unwrapByRef = false;
+      bool unwrapNeedsRunner = false;
 
       if (definition.GetSingleOrDefaultMethodWithAttribute<NetworkDeserializeMethodAttribute>(out var unwrapAttribute, out var unwrapMethod)) {
         if (wrapMethod == null) {
           throw new ILWeaverException($"Method marked with {nameof(NetworkDeserializeMethodAttribute)}, but there is no method marked with {nameof(NetworkSerializeMethodAttribute)}: {unwrapMethod}");
         }
 
+        int argsStart = 0;
+        
         try {
-          if (needsRunner) {
+          if (unwrapMethod.ThrowIfParameterCountLessThan(1).Parameters[0].ParameterType.Is<NetworkRunner>()) {
+            unwrapNeedsRunner = true;
+            argsStart = 1;
+          }
+          
+          if (wrapNeedsRunner) {
             unwrapMethod.ThrowIfParameterCountLessThan(1)
                         .ThrowIfParameter(0, typeof(NetworkRunner));
           }
@@ -7106,7 +7250,8 @@ namespace Fusion.CodeGen
 
       if (wrapMethod != null && unwrapMethod != null) {
         result = new NetworkTypeWrapInfo() {
-          NeedsRunner = needsRunner,
+          WrapNeedsRunner = wrapNeedsRunner,
+          UnwrapNeedsRunner = unwrapNeedsRunner,
           UnwrapMethod = _module.ImportReference(unwrapMethod),
           WrapMethod = _module.ImportReference(wrapMethod),
           MaxByteCount = rawByteCount,
@@ -7156,20 +7301,20 @@ namespace Fusion.CodeGen
 #region Assets/Photon/Fusion/CodeGen/NetworkTypeWrapInfo.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen
-{
-    using Mono.Cecil;
+namespace Fusion.CodeGen {
+  using Mono.Cecil;
 
-    public class NetworkTypeWrapInfo {
+  public class NetworkTypeWrapInfo {
     public NetworkTypeInfo WrapperTypeInfo;
-    public TypeReference WrapperType;
-    public TypeReference TargetType;
+    public TypeReference   WrapperType;
+    public TypeReference   TargetType;
     public MethodReference WrapMethod;
     public MethodReference UnwrapMethod;
-    public bool NeedsRunner;
-    public bool UnwrapByRef;
-    public int MaxByteCount;
-    public bool IsRaw => MaxByteCount > 0; 
+    public bool            WrapNeedsRunner;
+    public bool            UnwrapNeedsRunner;
+    public bool            UnwrapByRef;
+    public int             MaxByteCount;
+    public bool            IsRaw => MaxByteCount > 0; 
   }
 }
 #endif
