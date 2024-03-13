@@ -1,18 +1,18 @@
-namespace Fusion
-{
-    using System;
-    using UnityEngine;
-    using UI = UnityEngine.UI;
-    using StatsInternal;
+namespace Fusion {
+  using System;
+  using UnityEngine;
+  using UI = UnityEngine.UI;
+  using StatsInternal;
+  using System.Collections.Generic;
 
 #if UNITY_EDITOR
-    using UnityEditor;
+  using UnityEditor;
 #endif
 
-    /// <summary>
-    /// Individual graph components generated and used by <see cref="FusionStats"/>.
-    /// </summary>
-    public class FusionStatsGraph : FusionStatsGraphBase {
+  /// <summary>
+  /// Individual graph components generated and used by <see cref="FusionStats"/>.
+  /// </summary>
+  public class FusionStatsGraph : FusionStatsGraphBase {
 
     public enum Layouts {
       Auto,
