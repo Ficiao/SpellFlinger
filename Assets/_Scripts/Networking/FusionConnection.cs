@@ -35,7 +35,7 @@ namespace SpellSlinger.Networking
 
         public void ConnectToLobby(String playerName = null)
         {
-            if(!_playerName.IsNullOrEmpty()) _playerName = playerName;
+            if(!playerName.IsNullOrEmpty()) _playerName = playerName;
             _runner.JoinSessionLobby(SessionLobby.Shared);
         }
 
@@ -78,13 +78,13 @@ namespace SpellSlinger.Networking
                 characterController.enabled = true;
                 runner.SetPlayerObject(runner.LocalPlayer, playerObject);
                 PlayerStats stats = characterController.PlayerStats;
-                stats.SetPlayerName(_playerName);
                 if (_gameModeType == GameModeType.TDM) stats.SetPlayerTeamAndWeapon(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType);
                 else
                 {
                     stats.SetPlayerTeamAndWeapon(TeamType.None, WeaponDataScriptable.SelectedWeaponType);
                     UiManager.Instance.ShowSoloScore();
                 }
+                stats.PlayerName = _playerName;
             }
         }
 
