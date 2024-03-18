@@ -26,9 +26,9 @@ namespace SpellFlinger.PlayScene
 
         public bool IsSlowed => _slowDuation > 0.001f;
 
-        [Networked, OnChangedRender(nameof(PlayerNameSet))] public NetworkString<_32> PlayerName { get; set; }
-        [Networked, OnChangedRender(nameof(TeamTypeChanged))] public TeamType Team { get; set; }
-        [Networked, OnChangedRender(nameof(SelectedWeaponChanged))] public WeaponType SelectedWeapon { get; set; }
+        [Networked] public NetworkString<_32> PlayerName { get; set; }
+        [Networked] public TeamType Team { get; set; }
+        [Networked] public WeaponType SelectedWeapon { get; set; }
         [Networked, OnChangedRender(nameof(HealthChanged))] public int Health { get; set; }
         [Networked, OnChangedRender(nameof(KillsChanged))] public int Kills { get; set; }
         [Networked, OnChangedRender(nameof(DeathsChanged))] public int Deaths { get; set; }
@@ -47,19 +47,28 @@ namespace SpellFlinger.PlayScene
             }
             else
             {
-                PlayerNameSet();
-                TeamTypeChanged();
-                SelectedWeaponChanged();
+                PlayerDataSet();
+                if (Team != TeamType.None) UiManager.Instance.AddTeamScore(Team, Kills);
                 _playerScoreboardData.UpdateScore(Kills, Deaths);
-                if (Team != TeamType.None) UiManager.Instance.AddTeamScore(Team, Kills); 
             }
         }
 
-        public void SetPlayerTeamAndWeapon(TeamType team, WeaponType weaponType)
+        public void SetPlayerData(TeamType team, WeaponType weaponType, String playerName)
         {
+            PlayerName = playerName;
             Team = team;
             PlayerManager.Instance.SetFriendlyTeam(Team);
             SelectedWeapon = weaponType;
+            PlayerDataSet();
+        }
+
+        private void PlayerDataSet()
+        {
+            _playerNameText.text = PlayerName.ToString();
+            _playerScoreboardData.Init(PlayerName.ToString());
+            _playerScoreboardData.SetTeamType(Team);
+            var weaponData = WeaponDataScriptable.Instance.GetWeaponData(SelectedWeapon);
+            _playerCharacterController.SetGloves(weaponData.GlovePrefab, weaponData.GloveLocation, weaponData.FireRate);
         }
 
         private void LateUpdate()
@@ -126,12 +135,6 @@ namespace SpellFlinger.PlayScene
             _playerCharacterController.GameEnd(winnerName, winnerColor);
         }
 
-        private void PlayerNameSet()
-        {
-            _playerNameText.text = PlayerName.ToString();
-            _playerScoreboardData.Init(PlayerName.ToString());
-        }
-
         private void HealthChanged()
         {
             if (!HasStateAuthority) _healthBar.value = (float)Health / _maxHealth;
@@ -154,15 +157,7 @@ namespace SpellFlinger.PlayScene
             _playerScoreboardData.UpdateScore(Kills, Deaths);
         }
 
-        private void DeathsChanged() => _playerScoreboardData.UpdateScore(Kills, Deaths);
-
-        private void TeamTypeChanged() => _playerScoreboardData.SetTeamType(Team);
-
-        private void SelectedWeaponChanged()
-        {
-            var weaponData = WeaponDataScriptable.Instance.GetWeaponData(SelectedWeapon);
-            _playerCharacterController.SetGloves(weaponData.GlovePrefab, weaponData.GloveLocation, weaponData.FireRate);
-        }
+        private void DeathsChanged() => _playerScoreboardData.UpdateScore(Kills, Deaths);  
 
         //private void CustomChangeDetector()
         //{
