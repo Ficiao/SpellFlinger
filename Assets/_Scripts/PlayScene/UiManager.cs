@@ -87,8 +87,8 @@ namespace SpellFlinger.PlayScene
         private void ShowTeamScore()
         {
             _teamScore.SetActive(true);
-            _teamAScoreText.text = "Team A: 0";
-            _teamBScoreText.text = "Team B: 0";
+            _teamAScoreText.text = "Team A: " + _teamAKills;
+            _teamBScoreText.text = "Team B: " + _teamBKills;
 
             if (PlayerManager.Instance.FriendlyTeam == TeamType.TeamA)
             {

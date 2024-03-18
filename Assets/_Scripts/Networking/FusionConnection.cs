@@ -85,13 +85,12 @@ namespace SpellSlinger.Networking
                 characterController.enabled = true;
                 runner.SetPlayerObject(runner.LocalPlayer, playerObject);
                 PlayerStats stats = characterController.PlayerStats;
-                if (_gameModeType == GameModeType.TDM) stats.SetPlayerTeamAndWeapon(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType);
+                if (_gameModeType == GameModeType.TDM) stats.SetPlayerData(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType, _playerName);
                 else
                 {
-                    stats.SetPlayerTeamAndWeapon(TeamType.None, WeaponDataScriptable.SelectedWeaponType);
+                    stats.SetPlayerData(TeamType.None, WeaponDataScriptable.SelectedWeaponType, _playerName);
                     UiManager.Instance.ShowSoloScore();
                 }
-                stats.PlayerName = _playerName;
             }
         }
 
