@@ -88,7 +88,7 @@ namespace SpellFlinger.PlayScene
                 {
                     Deaths++;
                     attacker.AddKillRpc();
-                    _playerCharacterController.PlayerKilled();
+                    //_playerCharacterController.PlayerKilled();
                 }
                 Health = 0;
             }

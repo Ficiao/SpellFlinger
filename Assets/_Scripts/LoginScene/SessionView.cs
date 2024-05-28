@@ -40,7 +40,7 @@ namespace SpellFlinger.LoginScene
 
             UpdateSessionList();
             _refreshButton.onClick.AddListener(UpdateSessionList);
-            _joinButton.onClick.AddListener(() => FusionConnection.Instance.JoinSession(_sessionData.Item1, _sessionData.Item2, _sessionData.Item3));
+            _joinButton.onClick.AddListener(() => FusionConnection.Instance.JoinSession(_sessionData.Item1));
         }
 
         public void UpdateSessionList()

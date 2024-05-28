@@ -29,7 +29,6 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private float _slowAmount = 0f;
         [SerializeField] private float _doubleJumpDelay = 0f;
         [SerializeField] private float _doubleJumpBoost = 1f;
-        private bool[] inputs = null;
         private float yVelocity = 0;
         private float _yRotation = 0;
         private CameraController _cameraController = null;
@@ -47,19 +46,25 @@ namespace SpellFlinger.PlayScene
 
         public override void Spawned()
         {
-            if (HasStateAuthority) Initialize(1);
+            if (HasInputAuthority) InitializeClient();
+            if (Runner.IsServer) InitializeServer();
+            if (Runner.IsServer) enabled = true;
         }
 
-        private void Initialize(int id)
+        private void InitializeClient()
         {
             _cameraController = CameraController.Instance;
             _cameraController.transform.parent = _cameraEndTarget;
-            _cameraController.Init(_cameraStartTarget, _cameraEndTarget);
+            _cameraController.Init(_cameraStartTarget, _cameraEndTarget);            
+            PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
+        }
+
+        private void InitializeServer()
+        {
             _controller.enabled = false;
             transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
             _controller.enabled = true;
             _projectilePrefab = WeaponDataScriptable.Instance.GetWeaponData(WeaponDataScriptable.SelectedWeaponType).WeaponPrefab;
-            inputs = new bool[5];
             PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
         }
 
@@ -70,26 +75,11 @@ namespace SpellFlinger.PlayScene
             _fireRate = fireRate;
         }
 
-        public void Update()
-        {
-            inputs[0]=Input.GetKey(KeyCode.W);
-            inputs[1]=Input.GetKey(KeyCode.S);
-            inputs[2]=Input.GetKey(KeyCode.A);
-            inputs[3]=Input.GetKey(KeyCode.D);
-            inputs[4]=Input.GetKey(KeyCode.Space);
-
-            if (!_cameraController.CameraEnabled) return;
-
-            _yRotation += Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity * Runner.DeltaTime;
-            if (Input.GetMouseButton(0) && Time.time > _fireCooldown)
-            {
-                _fireCooldown = Time.time + _fireRate;
-                Shoot();
-            }
-        }
-
         private void Shoot()
         {
+            if (Time.time < _fireCooldown) return;
+
+            _fireCooldown = Time.time + _fireRate;
             PlayerAnimationController.PlayShootAnimation(_playerAnimator);
 
             Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
@@ -129,24 +119,23 @@ namespace SpellFlinger.PlayScene
 
             if (_playerStats.Health <= 0 || _controller.enabled == false) return;
 
-            Vector2 _inputDirection = Vector2.zero;
-            if (inputs[0]) _inputDirection.y += 1;
-            if (inputs[1]) _inputDirection.y -= 1;
-            if (inputs[2]) _inputDirection.x -= 1;
-            if (inputs[3]) _inputDirection.x += 1;
-
-            PlayerAnimationController.AnimationUpdate(isGrounded, (int)_inputDirection.x, (int)_inputDirection.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
-            Move(_inputDirection, isGrounded);
+            if (GetInput(out NetworkInputData data))
+            {
+                if (Input.GetMouseButton(0)) Shoot();
+                PlayerAnimationController.AnimationUpdate(isGrounded, data.XDirection, data.YDirection, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
+                _yRotation += data.YRotation;
+                Move(data.XDirection, data.YDirection, data.Jump, isGrounded);
+            }
         }
 
-        private void Move(Vector2 _inputDirection, bool isGroundedFrameNormalized)
+        private void Move(int xDirection, int yDirection, bool jump, bool isGroundedFrameNormalized)
         {
             transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
 
-            Vector3 _moveDirection = transform.right * _inputDirection.x + transform.forward * _inputDirection.y;
+            Vector3 _moveDirection = transform.right * xDirection + transform.forward * yDirection;
             _moveDirection *= _moveSpeed * Runner.DeltaTime;
             if (_playerStats.IsSlowed) _moveDirection *= _slowAmount;
-            if (_inputDirection.x != 0 && _inputDirection.y != 0) _moveDirection /= (float)Math.Sqrt(2);
+            if (xDirection != 0 && yDirection != 0) _moveDirection /= (float)Math.Sqrt(2);
 
             float deltaGravity = _gravity * Runner.DeltaTime;
             yVelocity += deltaGravity;
@@ -158,21 +147,21 @@ namespace SpellFlinger.PlayScene
             if (_controller.isGrounded)
             {
                 yVelocity = 0f;
-                if (inputs[4])
+                if (jump)
                 {
                     yVelocity = _jumpSpeed;
                     _jumpTime = Time.time;
-                    inputs[4] = false;
+                    jump = false;
                 }
             }
 
             if(isGroundedFrameNormalized) _doubleJumpAvailable = true;
-            else if(inputs[4] && _doubleJumpAvailable  && Time.time - _jumpTime >= _doubleJumpDelay)
+            else if(jump && _doubleJumpAvailable  && Time.time - _jumpTime >= _doubleJumpDelay)
             {
                 _doubleJumpAvailable = false;
                 yVelocity = _jumpSpeed * _doubleJumpBoost;
                 Debug.Log("Double jumped");
-                inputs[4] = false;
+                jump = false;
             }
 
             _moveDirection = AdjustVelocityToSlope(_moveDirection);

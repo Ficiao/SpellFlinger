@@ -19,8 +19,9 @@ namespace SpellSlinger.Networking
         [SerializeField] private PlayerCharacterController _playerPrefab = null;
         [SerializeField] private NetworkRunner _networkRunnerPrefab = null;
         [SerializeField] private int _playerCount = 10;
-        [SerializeField] private NetworkRunner _runner = null;
-        [SerializeField] private NetworkSceneManagerDefault _networkSceneManager= null;
+        private NetworkRunner _runner = null;
+        private NetworkSceneManagerDefault _networkSceneManager= null;
+        private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new Dictionary<PlayerRef, NetworkObject>();
         private List<SessionInfo> _sessions = new List<SessionInfo>();
         private GameModeType _gameModeType;
         public List<SessionInfo> Sessions => _sessions;
@@ -31,6 +32,7 @@ namespace SpellSlinger.Networking
         {
             base.Awake();
             _networkSceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
+            _runner = gameObject.AddComponent<NetworkRunner>();
         }
 
         public void ConnectToLobby(String playerName = null)
@@ -39,9 +41,9 @@ namespace SpellSlinger.Networking
             _runner.JoinSessionLobby(SessionLobby.Shared);
         }
 
-        public async void JoinSession(string sessionName, GameModeType gameMode, LevelType level)
+        public async void CreateSession(string sessionName, GameModeType gameMode, LevelType level)
         {
-            _runner.ProvideInput = false;
+            _runner.ProvideInput = true;
 
             Dictionary<string, SessionProperty> properties = new Dictionary<string, SessionProperty>();
             properties.Add("level", SessionProperty.Convert((int)level));
@@ -50,12 +52,23 @@ namespace SpellSlinger.Networking
 
             await _runner.StartGame(new StartGameArgs()
             {
-                GameMode = GameMode.Shared,
+                GameMode = GameMode.Host,
                 SessionName = sessionName,
                 Scene = SceneRef.FromIndex((int)level),
                 PlayerCount = _playerCount,
                 SceneManager = _networkSceneManager,
                 SessionProperties = properties,
+            });
+        }
+
+        public async void JoinSession(string sessionName)
+        {
+            _runner.ProvideInput = true;
+
+            await _runner.StartGame(new StartGameArgs()
+            {
+                GameMode = GameMode.Client,
+                SessionName = sessionName,
             });
         }
 
@@ -78,13 +91,10 @@ namespace SpellSlinger.Networking
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log("On Player Joined");
-            if (player == runner.LocalPlayer)
+            if (runner.IsServer)
             {
-                NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject);
-                PlayerCharacterController characterController = playerObject.GetComponent<PlayerCharacterController>();
-                characterController.enabled = true;
-                runner.SetPlayerObject(runner.LocalPlayer, playerObject);
-                PlayerStats stats = characterController.PlayerStats;
+                NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, inputAuthority: player);
+                PlayerStats stats = playerObject.GetComponent<PlayerCharacterController>().PlayerStats;
                 if (_gameModeType == GameModeType.TDM) stats.SetPlayerData(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType, _playerName);
                 else
                 {
@@ -92,6 +102,48 @@ namespace SpellSlinger.Networking
                     UiManager.Instance.ShowSoloScore();
                 }
             }
+        }
+
+        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
+        {
+            Debug.Log("On Player Left");
+            if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
+            {
+                runner.Despawn(networkObject);
+                _spawnedCharacters.Remove(player);
+            }
+        }
+
+        public void OnInput(NetworkRunner runner, NetworkInput input)
+        {
+            Debug.Log("On Input");
+
+            var data = new NetworkInputData();
+
+            if (CameraController.Instance &&!CameraController.Instance.CameraEnabled)
+            {
+                input.Set(data);
+                return;
+            }
+
+            if (Input.GetKey(KeyCode.W))
+                data.YDirection++;
+
+            if (Input.GetKey(KeyCode.S))
+                data.YDirection--;
+
+            if (Input.GetKey(KeyCode.D))
+                data.XDirection++;
+
+            if (Input.GetKey(KeyCode.A))
+                data.XDirection--;
+
+            data.Jump = Input.GetKey(KeyCode.Space);
+
+            data.YRotation = Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity * runner.DeltaTime;
+            data.Shoot = Input.GetMouseButton(0);
+
+            input.Set(data);
         }
 
         private void OnApplicationQuit()
@@ -131,11 +183,6 @@ namespace SpellSlinger.Networking
             Debug.Log("On Host Migration");
         }
 
-        public void OnInput(NetworkRunner runner, NetworkInput input)
-        {
-            Debug.Log("On Input");
-        }
-
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
         {
             Debug.Log("On Input Missing");
@@ -149,11 +196,6 @@ namespace SpellSlinger.Networking
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
         {
             Debug.Log("OnO bject Exit AOI");
-        }
-
-        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
-        {
-            Debug.Log("On Player Left");
         }
 
         public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)

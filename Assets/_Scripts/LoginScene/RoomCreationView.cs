@@ -40,7 +40,7 @@ namespace SpellFlinger.LoginScene
         {
             GameModeType gameMode = _teamDeathMatchToggle.isOn ? GameModeType.TDM : GameModeType.DM;
             LevelType level = _selectedLevelType;
-            FusionConnection.Instance.JoinSession(_roomNameInput.text, gameMode, level);
+            FusionConnection.Instance.CreateSession(_roomNameInput.text, gameMode, level);
         }
     }
 }
