@@ -5,10 +5,12 @@ namespace SpellFlinger.PlayScene
 {
     public struct NetworkInputData : INetworkInput
     {
+        public const byte SHOOT = 1;
+        public const byte JUMP = 2;
+
         public int XDirection;
         public int YDirection;
-        public bool Jump;
         public float YRotation;
-        public bool Shoot;
+        public NetworkButtons buttons;
     }
 }

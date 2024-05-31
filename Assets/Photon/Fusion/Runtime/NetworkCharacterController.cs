@@ -42,21 +42,18 @@ namespace Fusion {
     [Header("Character Controller Settings")]
     public float gravity = -20.0f;
     public float jumpImpulse   = 8.0f;
-    public float acceleration  = 10.0f;
-    public float braking       = 10.0f;
-    public float maxSpeed      = 2.0f;
     public float rotationSpeed = 15.0f;
     public float moveSpeed = 0f;
-    public float jumpBurst = 0f;
+    public float gravityBurst = 0f;
     public float slowAmount = 0f;
-    private float doubleJumpBoost;
+    public float doubleJumpBoost = 0f;
     public float doubleJumpDelay = 0f;
     public float slopeRaycastDistance = 0f;
 
     private float _squareOfTwo = Mathf.Sqrt(2);
-    private float _yVelocity = 0f;
     private float _jumpTime = 0f;
     private bool _doubleJumpAvailable = false;
+    private int _updatesSinceLastGrounded = 0;
 
     Tick                _initial;
     CharacterController _controller;
@@ -78,13 +75,90 @@ namespace Fusion {
     }
 
 
-    public void Jump(bool ignoreGrounded = false, bool burstedJump = false) {
+    public float Jump(bool ignoreGrounded = false, bool doubleJump = false) {
       if (Data.Grounded || ignoreGrounded) {
         var newVel = Data.Velocity;
-        _yVelocity = burstedJump ? jumpBurst : jumpImpulse;
-        newVel.y = _yVelocity;
+        newVel.y = doubleJump ? doubleJumpBoost : jumpImpulse;
         Data.Velocity =  newVel;
+        return newVel.y;
       }
+
+      return Data.Velocity.y;
+    }
+
+    public void Move(int xDirection, int yDirection, bool isSlowed, bool jump, float rotation)
+    {
+        var deltaTime = Runner.DeltaTime;
+        var previousPos = transform.position;
+        var moveVelocity = Data.Velocity;
+
+        bool isGrounded = _controller.isGrounded;
+        if (isGrounded) _updatesSinceLastGrounded = 0;
+        else if (_updatesSinceLastGrounded < 3)
+        {
+            isGrounded = true;
+            _updatesSinceLastGrounded++;
+        }
+
+        Vector3 _moveDirection = transform.right * xDirection + transform.forward * yDirection;
+        _moveDirection *= moveSpeed;
+        if (isSlowed) _moveDirection *= slowAmount;
+        if (xDirection != 0 && yDirection != 0) _moveDirection /= _squareOfTwo;
+
+        float deltaGravity = gravity * deltaTime;
+        moveVelocity.y += deltaGravity;
+        if (Math.Abs(moveVelocity.y) < deltaGravity)
+        {
+            moveVelocity.y += gravity * gravityBurst;
+        }
+
+        if (_controller.isGrounded)
+        {
+            moveVelocity.y = 0f;
+            if (jump)
+            {
+                moveVelocity.y = Jump();
+                _jumpTime = Time.time;   
+            }
+        }
+
+        if (isGrounded) _doubleJumpAvailable = true;
+        else if (jump && _doubleJumpAvailable && Time.time - _jumpTime >= doubleJumpDelay)
+        {
+            _doubleJumpAvailable = false;
+            moveVelocity.y = Jump(ignoreGrounded: true, doubleJump: true);
+            Debug.Log("Double jumped");
+        }
+
+        _moveDirection = AdjustVelocityToSlope(_moveDirection);
+        _moveDirection.y += moveVelocity.y;
+        _controller.Move(_moveDirection * deltaTime);
+
+        //Debug.Log($"Data rotation before: " + Data.Rotation);
+        //Data.Rotation = Quaternion.Euler(0, Data.Rotation.y + rotation, 0);
+        //Debug.Log($"Data rotation after: " + Data.Rotation);
+        //transform.rotation = Data.Rotation;
+
+        moveVelocity = (transform.position - previousPos) * Runner.TickRate;
+        moveVelocity.y = _moveDirection.y;
+        Data.Velocity = moveVelocity;
+        Data.Grounded = isGrounded;
+    }
+
+    private Vector3 AdjustVelocityToSlope(Vector3 velocity)
+    {
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, slopeRaycastDistance))
+        {
+            if (hit.collider.tag == "Ground")
+            {
+                Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                Vector3 adjustedVelocity = slopeRotation * velocity;
+
+                if (adjustedVelocity.y < 0) return adjustedVelocity;
+            }
+        }
+
+        return velocity;
     }
 
     //public void Move(Vector3 direction, float slopeRaycastDistance, bool isGroundedFrameNormalized) {
@@ -117,65 +191,6 @@ namespace Fusion {
     //  Data.Velocity = (transform.position - previousPos) * Runner.TickRate;
     //  Data.Grounded = _controller.isGrounded;
     //}
-
-    public void Move(int xDirection, int yDirection, bool isGroundedFrameNormalized, bool isSlowed, bool jump)
-    {
-        var deltaTime = Runner.DeltaTime;
-        var previousPos = transform.position;
-        var moveVelocity = Data.Velocity;
-
-        Vector3 _moveDirection = transform.right * xDirection + transform.forward * yDirection;
-        if (isSlowed) _moveDirection *= slowAmount;
-        if (xDirection != 0 && yDirection != 0) _moveDirection /= _squareOfTwo;
-
-        float deltaGravity = gravity * Runner.DeltaTime;
-        _yVelocity += deltaGravity;
-        if (Math.Abs(_yVelocity) < deltaGravity)
-        {
-            _yVelocity += gravity * jumpBurst;
-        }
-
-        if (_controller.isGrounded)
-        {
-            _yVelocity = 0f;
-            if (jump)
-            {
-                Jump();
-                _jumpTime = Time.time;   
-            }
-        }
-
-        if (isGroundedFrameNormalized) _doubleJumpAvailable = true;
-        else if (jump && _doubleJumpAvailable && Time.time - _jumpTime >= doubleJumpDelay)
-        {
-            _doubleJumpAvailable = false;
-            Jump(ignoreGrounded: true, burstedJump: true);
-            Debug.Log("Double jumped");
-        }
-
-        _moveDirection = AdjustVelocityToSlope(_moveDirection);
-        _moveDirection.y += _yVelocity;
-        _controller.Move(_moveDirection * deltaTime);
-
-        Data.Velocity = (transform.position - previousPos) * Runner.TickRate;
-        Data.Grounded = _controller.isGrounded;
-    }
-
-    private Vector3 AdjustVelocityToSlope(Vector3 velocity)
-    {
-        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, slopeRaycastDistance))
-        {
-            if (hit.collider.tag == "Ground")
-            {
-                Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                Vector3 adjustedVelocity = slopeRotation * velocity;
-
-                if (adjustedVelocity.y < 0) return adjustedVelocity;
-            }
-        }
-
-        return velocity;
-    }
 
     public override void Spawned() {
       _initial = default;

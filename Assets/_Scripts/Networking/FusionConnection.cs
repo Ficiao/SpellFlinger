@@ -10,6 +10,7 @@ using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
 using SpellFlinger.Scriptables;
 using WebSocketSharp;
+using ExitGames.Client.Photon.StructWrapping;
 
 namespace SpellSlinger.Networking
 {
@@ -104,6 +105,7 @@ namespace SpellSlinger.Networking
             }
         }
 
+
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log("On Player Left");
@@ -113,14 +115,25 @@ namespace SpellSlinger.Networking
                 _spawnedCharacters.Remove(player);
             }
         }
+        private float _yRotation;
+        private void Update()
+        {
+            _yRotation = Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity;
+        }
+
+        private void OnApplicationQuit()
+        {
+            base.OnApplicationQuit();
+
+            if (_runner != null && !_runner.IsDestroyed()) _runner.Shutdown();
+        }
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
             Debug.Log("On Input");
-
             var data = new NetworkInputData();
 
-            if (CameraController.Instance &&!CameraController.Instance.CameraEnabled)
+            if (CameraController.Instance && !CameraController.Instance.CameraEnabled)
             {
                 input.Set(data);
                 return;
@@ -138,19 +151,15 @@ namespace SpellSlinger.Networking
             if (Input.GetKey(KeyCode.A))
                 data.XDirection--;
 
-            data.Jump = Input.GetKey(KeyCode.Space);
+            data.buttons.Set(NetworkInputData.JUMP, Input.GetKey(KeyCode.Space));
 
-            data.YRotation = Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity * runner.DeltaTime;
-            data.Shoot = Input.GetMouseButton(0);
+            data.buttons.Set(NetworkInputData.SHOOT, Input.GetMouseButton(0));
+
+            data.YRotation = _yRotation * runner.DeltaTime;
+            _yRotation = 0;
+
 
             input.Set(data);
-        }
-
-        private void OnApplicationQuit()
-        {
-            base.OnApplicationQuit();
-
-            if (_runner != null && !_runner.IsDestroyed()) _runner.Shutdown();
         }
 
         public void OnConnectedToServer(NetworkRunner runner)

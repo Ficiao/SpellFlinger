@@ -752,27 +752,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcee4eba1c67774abfee82654e9f237, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _angularSpeed: 65
   _cameraEndTarget: {fileID: 7513462069005258501}
   _cameraStartTarget: {fileID: 9007967519532418105}
   _cameraAimTarget: {fileID: 1643971804558793738}
-  _gravityBurst: 2
   _networkController: {fileID: 9045017206345643455}
-  _characterController: {fileID: 7624302876728446786}
-  _gravity: -1
-  _moveSpeed: 8.5
-  _jumpSpeed: 0.55
   _respawnTime: 5
-  _slopeRaycastDistance: 1.2
   _shootOrigin: {fileID: 5309609598348471599}
   _playerStats: {fileID: 646171336720109413}
   _playerModel: {fileID: 977380601174085628}
   _modelLeftHand: {fileID: 6588018020662732654}
   _modelRightHand: {fileID: 1793733794221526373}
   _playerAnimator: {fileID: 7645790273635992488}
-  _slowAmount: 0.6
-  _doubleJumpDelay: 0.4
-  _doubleJumpBoost: 1.2
   _fireRate: 0
 --- !u!114 &9045017206345643455
 MonoBehaviour:
@@ -781,17 +771,20 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3485277354548307455}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 378411a89480da345945c2f888327a2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravity: -20
-  jumpImpulse: 22
-  acceleration: 1e+9
-  braking: 1e+9
-  maxSpeed: 6
-  rotationSpeed: 0
+  gravity: -30
+  jumpImpulse: 17
+  rotationSpeed: 65
+  moveSpeed: 8.5
+  gravityBurst: 2
+  slowAmount: 0.6
+  doubleJumpBoost: 20
+  doubleJumpDelay: 0.4
+  slopeRaycastDistance: 1.2
 --- !u!114 &646171336720109413
 MonoBehaviour:
   m_ObjectHideFlags: 0

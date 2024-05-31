@@ -9,38 +9,23 @@ namespace SpellFlinger.PlayScene
 {
     public class PlayerCharacterController : NetworkBehaviour
     {
-        [SerializeField] private float _angularSpeed = 0;
         [SerializeField] private Transform _cameraEndTarget = null;
         [SerializeField] private Transform _cameraStartTarget = null;
         [SerializeField] private Transform _cameraAimTarget = null;
-        [SerializeField] private float _gravityBurst = 0;
         [SerializeField] private NetworkCharacterController _networkController;
-        [SerializeField] private CharacterController _characterController;
-        [SerializeField] private float _gravity = -9.81f;
-        [SerializeField] private float _moveSpeed = 5f;
-        [SerializeField] private float _jumpSpeed = 5f;
         [SerializeField] private int _respawnTime = 0;
-        [SerializeField] private float _slopeRaycastDistance = 0f;
         [SerializeField] private Transform _shootOrigin;
         [SerializeField] private PlayerStats _playerStats = null;
         [SerializeField] private GameObject _playerModel = null;
         [SerializeField] private Transform _modelLeftHand = null;
         [SerializeField] private Transform _modelRightHand = null;
         [SerializeField] private Animator _playerAnimator = null;
-        [SerializeField] private float _slowAmount = 0f;
-        [SerializeField] private float _doubleJumpDelay = 0f;
-        [SerializeField] private float _doubleJumpBoost = 1f;
-        private float yVelocity = 0;
-        private float _yRotation = 0;
         private CameraController _cameraController = null;
         private Projectile _projectilePrefab = null;
         private PlayerAnimationState _playerAnimationState = PlayerAnimationState.Idle;
-        private int _updatesSinceLastGrounded = 0;
         [SerializeField] private float _fireRate = 0;
         private float _fireCooldown = 0;
         private bool _respawnReady = false;
-        private bool _doubleJumpAvailable = false;
-        private float _jumpTime = 0;
         private IEnumerator _respawnCoroutine = null;
 
         public PlayerStats PlayerStats => _playerStats;
@@ -61,9 +46,7 @@ namespace SpellFlinger.PlayScene
 
         private void InitializeServer()
         {
-            _characterController.enabled = false;
-            transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
-            _characterController.enabled = true;
+            _networkController.Teleport(SpawnLocationManager.Instance.GetRandomSpawnLocation());
             _projectilePrefab = WeaponDataScriptable.Instance.GetWeaponData(WeaponDataScriptable.SelectedWeaponType).WeaponPrefab;
             PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
         }
@@ -109,31 +92,16 @@ namespace SpellFlinger.PlayScene
         {
             if(_respawnReady) Respawn();
 
-            bool isGrounded = _networkController.Grounded;
-            if (isGrounded) _updatesSinceLastGrounded = 0;
-            else if (_updatesSinceLastGrounded < 2) 
-            {
-                isGrounded = true;
-                _updatesSinceLastGrounded++;
-            }
-
             if (_playerStats.Health <= 0 || _networkController.enabled == false) return;
 
             if (GetInput(out NetworkInputData data))
             {
-                if (Input.GetMouseButton(0)) Shoot();
-                PlayerAnimationController.AnimationUpdate(isGrounded, data.XDirection, data.YDirection, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
-                _yRotation += data.YRotation;
-                transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
+                if (HasStateAuthority && data.buttons.IsSet(NetworkInputData.SHOOT)) Shoot();
 
-                _networkController.Move(data.XDirection, data.YDirection, data.Jump, isGroundedFrameNormalized, isGrounded);                
+                _networkController.Move(data.XDirection, data.YDirection, _playerStats.IsSlowed, data.buttons.IsSet(NetworkInputData.JUMP), data.YRotation);                
+                PlayerAnimationController.AnimationUpdate(_networkController.Grounded, data.XDirection, data.YDirection, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
             }
         }
-
-        private void Move(int xDirection, int yDirection, bool jump, bool isGroundedFrameNormalized)
-        {
-            _networkController.Move(_moveDirection, _slopeRaycastDistance);
-        }      
 
         [Rpc(RpcSources.All, RpcTargets.All)]
         public void DisableControllerRpc()
