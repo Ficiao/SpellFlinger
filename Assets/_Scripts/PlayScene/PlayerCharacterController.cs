@@ -124,50 +124,16 @@ namespace SpellFlinger.PlayScene
                 if (Input.GetMouseButton(0)) Shoot();
                 PlayerAnimationController.AnimationUpdate(isGrounded, data.XDirection, data.YDirection, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
                 _yRotation += data.YRotation;
-                Move(data.XDirection, data.YDirection, data.Jump, isGrounded);
+                transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
+
+                _networkController.Move(data.XDirection, data.YDirection, data.Jump, isGroundedFrameNormalized, isGrounded);                
             }
         }
 
         private void Move(int xDirection, int yDirection, bool jump, bool isGroundedFrameNormalized)
         {
-            transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
-
-            Vector3 _moveDirection = transform.right * xDirection + transform.forward * yDirection;
-            if (_playerStats.IsSlowed) _moveDirection *= _slowAmount;
-            if (xDirection != 0 && yDirection != 0) _moveDirection /= (float)Math.Sqrt(2);
-
-            if (_networkController.Grounded && jump)
-            {
-                _networkController.Jump();
-            }
-
-            if(isGroundedFrameNormalized) _doubleJumpAvailable = true;
-            else if(jump && _doubleJumpAvailable  && Time.time - _jumpTime >= _doubleJumpDelay)
-            {
-                _doubleJumpAvailable = false;
-                _networkController.Jump();
-                Debug.Log("Double jumped");
-            }
-
-            _moveDirection = AdjustVelocityToSlope(_moveDirection);
             _networkController.Move(_moveDirection, _slopeRaycastDistance);
         }      
-
-        private Vector3 AdjustVelocityToSlope(Vector3 velocity)
-        {
-            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, _slopeRaycastDistance))
-            {
-                if (hit.collider.tag == "Ground")
-                {
-                    Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                    Vector3 adjustedVelocity = slopeRotation * velocity;
-
-                    if (adjustedVelocity.y < 0) return adjustedVelocity;
-                }
-            }
-
-            return velocity;
-        }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
         public void DisableControllerRpc()
