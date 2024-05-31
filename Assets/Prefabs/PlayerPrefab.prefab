@@ -690,12 +690,11 @@ GameObject:
   - component: {fileID: 8021553351502256923}
   - component: {fileID: 7624302876728446786}
   - component: {fileID: 4082986052222582566}
+  - component: {fileID: 9045017206345643455}
   - component: {fileID: 646171336720109413}
   - component: {fileID: 7645790273635992488}
   - component: {fileID: 3731807080013286866}
-  - component: {fileID: 392593491245675548}
   - component: {fileID: 7112313210611333801}
-  - component: {fileID: 3581342487162540059}
   - component: {fileID: 160892964657384794}
   m_Layer: 0
   m_Name: PlayerPrefab
@@ -748,7 +747,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3485277354548307455}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bcee4eba1c67774abfee82654e9f237, type: 3}
   m_Name: 
@@ -758,7 +757,8 @@ MonoBehaviour:
   _cameraStartTarget: {fileID: 9007967519532418105}
   _cameraAimTarget: {fileID: 1643971804558793738}
   _gravityBurst: 2
-  _controller: {fileID: 7624302876728446786}
+  _networkController: {fileID: 9045017206345643455}
+  _characterController: {fileID: 7624302876728446786}
   _gravity: -1
   _moveSpeed: 8.5
   _jumpSpeed: 0.55
@@ -774,6 +774,24 @@ MonoBehaviour:
   _doubleJumpDelay: 0.4
   _doubleJumpBoost: 1.2
   _fireRate: 0
+--- !u!114 &9045017206345643455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3485277354548307455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 378411a89480da345945c2f888327a2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravity: -20
+  jumpImpulse: 22
+  acceleration: 1e+9
+  braking: 1e+9
+  maxSpeed: 6
+  rotationSpeed: 0
 --- !u!114 &646171336720109413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -837,20 +855,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!136 &392593491245675548
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3485277354548307455}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 0
-  m_Radius: 0.56993437
-  m_Height: 2.2845998
-  m_Direction: 1
-  m_Center: {x: -1.6817453e-10, y: 0.09771669, z: 0.029493699}
 --- !u!114 &7112313210611333801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -869,26 +873,10 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 4082986052222582566}
+  - {fileID: 9045017206345643455}
   - {fileID: 646171336720109413}
-  - {fileID: 3581342487162540059}
   - {fileID: 160892964657384794}
   - {fileID: 1977785121756882548}
---- !u!114 &3581342487162540059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3485277354548307455}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncScale: 0
-  SyncParent: 0
-  _autoAOIOverride: 1
-  DisableSharedModeInterpolation: 0
 --- !u!114 &160892964657384794
 MonoBehaviour:
   m_ObjectHideFlags: 0

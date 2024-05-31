@@ -14,7 +14,8 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Transform _cameraStartTarget = null;
         [SerializeField] private Transform _cameraAimTarget = null;
         [SerializeField] private float _gravityBurst = 0;
-        [SerializeField] private CharacterController _controller;
+        [SerializeField] private NetworkCharacterController _networkController;
+        [SerializeField] private CharacterController _characterController;
         [SerializeField] private float _gravity = -9.81f;
         [SerializeField] private float _moveSpeed = 5f;
         [SerializeField] private float _jumpSpeed = 5f;
@@ -48,7 +49,6 @@ namespace SpellFlinger.PlayScene
         {
             if (HasInputAuthority) InitializeClient();
             if (Runner.IsServer) InitializeServer();
-            if (Runner.IsServer) enabled = true;
         }
 
         private void InitializeClient()
@@ -61,9 +61,9 @@ namespace SpellFlinger.PlayScene
 
         private void InitializeServer()
         {
-            _controller.enabled = false;
+            _characterController.enabled = false;
             transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
-            _controller.enabled = true;
+            _characterController.enabled = true;
             _projectilePrefab = WeaponDataScriptable.Instance.GetWeaponData(WeaponDataScriptable.SelectedWeaponType).WeaponPrefab;
             PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
         }
@@ -109,7 +109,7 @@ namespace SpellFlinger.PlayScene
         {
             if(_respawnReady) Respawn();
 
-            bool isGrounded = _controller.isGrounded;
+            bool isGrounded = _networkController.Grounded;
             if (isGrounded) _updatesSinceLastGrounded = 0;
             else if (_updatesSinceLastGrounded < 2) 
             {
@@ -117,7 +117,7 @@ namespace SpellFlinger.PlayScene
                 _updatesSinceLastGrounded++;
             }
 
-            if (_playerStats.Health <= 0 || _controller.enabled == false) return;
+            if (_playerStats.Health <= 0 || _networkController.enabled == false) return;
 
             if (GetInput(out NetworkInputData data))
             {
@@ -133,40 +133,24 @@ namespace SpellFlinger.PlayScene
             transform.eulerAngles = new Vector3(0f, _yRotation, 0f);
 
             Vector3 _moveDirection = transform.right * xDirection + transform.forward * yDirection;
-            _moveDirection *= _moveSpeed * Runner.DeltaTime;
             if (_playerStats.IsSlowed) _moveDirection *= _slowAmount;
             if (xDirection != 0 && yDirection != 0) _moveDirection /= (float)Math.Sqrt(2);
 
-            float deltaGravity = _gravity * Runner.DeltaTime;
-            yVelocity += deltaGravity;
-            if (Math.Abs(yVelocity) < deltaGravity)
+            if (_networkController.Grounded && jump)
             {
-                yVelocity += _gravity * _gravityBurst;
-            }
-
-            if (_controller.isGrounded)
-            {
-                yVelocity = 0f;
-                if (jump)
-                {
-                    yVelocity = _jumpSpeed;
-                    _jumpTime = Time.time;
-                    jump = false;
-                }
+                _networkController.Jump();
             }
 
             if(isGroundedFrameNormalized) _doubleJumpAvailable = true;
             else if(jump && _doubleJumpAvailable  && Time.time - _jumpTime >= _doubleJumpDelay)
             {
                 _doubleJumpAvailable = false;
-                yVelocity = _jumpSpeed * _doubleJumpBoost;
+                _networkController.Jump();
                 Debug.Log("Double jumped");
-                jump = false;
             }
 
             _moveDirection = AdjustVelocityToSlope(_moveDirection);
-            _moveDirection.y += yVelocity;
-            _controller.Move(_moveDirection);
+            _networkController.Move(_moveDirection, _slopeRaycastDistance);
         }      
 
         private Vector3 AdjustVelocityToSlope(Vector3 velocity)
@@ -189,14 +173,14 @@ namespace SpellFlinger.PlayScene
         public void DisableControllerRpc()
         {
             if (HasStateAuthority) return;
-            _controller.enabled = false;
+            _networkController.enabled = false;
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
         public void EnableControllerRpc()
         {
             if (HasStateAuthority) return;
-            _controller.enabled = true;
+            _networkController.enabled = true;
         }
 
         public void GameEnd(TeamType winnerTeam, Color winnerColor)
@@ -226,7 +210,7 @@ namespace SpellFlinger.PlayScene
         private IEnumerator GameEndCountdown()
         {
             _cameraController.CameraEnabled = false;
-            _controller.enabled = false;
+            _networkController.enabled = false;
 
             yield return new WaitForSeconds(7);
 
@@ -246,7 +230,7 @@ namespace SpellFlinger.PlayScene
         {
             UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
             _cameraController.CameraEnabled = false;
-            _controller.enabled = false;
+            _networkController.enabled = false;
             DisableControllerRpc();
 
             for (int i = 1; i < _respawnTime; i++)
@@ -267,7 +251,7 @@ namespace SpellFlinger.PlayScene
             PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
             transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
             EnableControllerRpc();
-            _controller.enabled = true;
+            _networkController.enabled = true;
             _cameraController.CameraEnabled = true;
         }
     }

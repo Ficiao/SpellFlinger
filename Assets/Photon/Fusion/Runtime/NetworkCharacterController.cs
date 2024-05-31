@@ -74,12 +74,12 @@ namespace Fusion {
       }
     }
 
-    public void Move(Vector3 direction) {
+    public void Move(Vector3 direction, float slopeRaycastDistance) {
       var deltaTime    = Runner.DeltaTime;
       var previousPos  = transform.position;
       var moveVelocity = Data.Velocity;
 
-      direction = direction.normalized;
+      //direction = direction.normalized;
 
       if (Data.Grounded && moveVelocity.y < 0) {
         moveVelocity.y = 0f;
@@ -101,13 +101,29 @@ namespace Fusion {
       moveVelocity.x = horizontalVel.x;
       moveVelocity.z = horizontalVel.z;
 
-      _controller.Move(moveVelocity * deltaTime);
+      _controller.Move(AdjustVelocityToSlope(moveVelocity, slopeRaycastDistance) * deltaTime);
 
       Data.Velocity = (transform.position - previousPos) * Runner.TickRate;
       Data.Grounded = _controller.isGrounded;
     }
-    
-    public override void Spawned() {
+
+    private Vector3 AdjustVelocityToSlope(Vector3 velocity, float slopeRaycastDistance)
+    {
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, slopeRaycastDistance))
+        {
+            if (hit.collider.tag == "Ground")
+            {
+                Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                Vector3 adjustedVelocity = slopeRotation * velocity;
+
+                if (adjustedVelocity.y < 0) return adjustedVelocity;
+            }
+        }
+
+        return velocity;
+    }
+
+        public override void Spawned() {
       _initial = default;
       TryGetComponent(out _controller);
       CopyToBuffer();
