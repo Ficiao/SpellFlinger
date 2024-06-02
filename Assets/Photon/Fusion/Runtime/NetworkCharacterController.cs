@@ -86,7 +86,7 @@ namespace Fusion {
       return Data.Velocity.y;
     }
 
-    public void Move(int xDirection, int yDirection, bool isSlowed, bool jump, float rotation)
+    public void Move(Vector2 direction, bool isSlowed, bool jump, float rotation)
     {
         var deltaTime = Runner.DeltaTime;
         var previousPos = transform.position;
@@ -100,10 +100,10 @@ namespace Fusion {
             _updatesSinceLastGrounded++;
         }
 
-        Vector3 _moveDirection = transform.right * xDirection + transform.forward * yDirection;
+        Vector3 _moveDirection = transform.right * direction.x + transform.forward * direction.y;
         _moveDirection *= moveSpeed;
         if (isSlowed) _moveDirection *= slowAmount;
-        if (xDirection != 0 && yDirection != 0) _moveDirection /= _squareOfTwo;
+        if (direction.x != 0 && direction.y != 0) _moveDirection /= _squareOfTwo;
 
         float deltaGravity = gravity * deltaTime;
         moveVelocity.y += deltaGravity;
@@ -134,10 +134,7 @@ namespace Fusion {
         _moveDirection.y += moveVelocity.y;
         _controller.Move(_moveDirection * deltaTime);
 
-        //Debug.Log($"Data rotation before: " + Data.Rotation);
-        //Data.Rotation = Quaternion.Euler(0, Data.Rotation.y + rotation, 0);
-        //Debug.Log($"Data rotation after: " + Data.Rotation);
-        //transform.rotation = Data.Rotation;
+        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + rotation, 0);
 
         moveVelocity = (transform.position - previousPos) * Runner.TickRate;
         moveVelocity.y = _moveDirection.y;

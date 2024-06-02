@@ -51,7 +51,7 @@ namespace SpellFlinger.PlayScene
 
             if (!_cameraEnabled) return;
 
-            float angle = - SensitivitySettingsScriptable.Instance.UpDownSensitivity * Input.GetAxis("Mouse Y") * Time.deltaTime;
+            float angle = - SensitivitySettingsScriptable.Instance.UpDownSensitivity * Input.GetAxis("Mouse Y");
             angle = Mathf.Clamp(angle, -_maxCameraAngle / _maxAngleDelta, _maxCameraAngle / _maxAngleDelta);
             _oldRotation = _endTarget.localEulerAngles;
             _endTarget.Rotate(angle, 0, 0);

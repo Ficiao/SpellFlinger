@@ -96,10 +96,14 @@ namespace SpellSlinger.Networking
             {
                 NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, inputAuthority: player);
                 PlayerStats stats = playerObject.GetComponent<PlayerCharacterController>().PlayerStats;
-                if (_gameModeType == GameModeType.TDM) stats.SetPlayerData(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType, _playerName);
-                else
+                if (_gameModeType == GameModeType.TDM)
                 {
-                    stats.SetPlayerData(TeamType.None, WeaponDataScriptable.SelectedWeaponType, _playerName);
+                    stats.Team = PlayerManager.Instance.GetTeamWithLessPlayers();
+                    UiManager.Instance.ShowTeamScore();
+                }
+                else if(_gameModeType == GameModeType.DM)
+                {
+                    stats.Team = TeamType.None;
                     UiManager.Instance.ShowSoloScore();
                 }
             }
@@ -115,11 +119,6 @@ namespace SpellSlinger.Networking
                 _spawnedCharacters.Remove(player);
             }
         }
-        private float _yRotation;
-        private void Update()
-        {
-            _yRotation = Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity;
-        }
 
         private void OnApplicationQuit()
         {
@@ -131,35 +130,6 @@ namespace SpellSlinger.Networking
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
             Debug.Log("On Input");
-            var data = new NetworkInputData();
-
-            if (CameraController.Instance && !CameraController.Instance.CameraEnabled)
-            {
-                input.Set(data);
-                return;
-            }
-
-            if (Input.GetKey(KeyCode.W))
-                data.YDirection++;
-
-            if (Input.GetKey(KeyCode.S))
-                data.YDirection--;
-
-            if (Input.GetKey(KeyCode.D))
-                data.XDirection++;
-
-            if (Input.GetKey(KeyCode.A))
-                data.XDirection--;
-
-            data.buttons.Set(NetworkInputData.JUMP, Input.GetKey(KeyCode.Space));
-
-            data.buttons.Set(NetworkInputData.SHOOT, Input.GetMouseButton(0));
-
-            data.YRotation = _yRotation * runner.DeltaTime;
-            _yRotation = 0;
-
-
-            input.Set(data);
         }
 
         public void OnConnectedToServer(NetworkRunner runner)

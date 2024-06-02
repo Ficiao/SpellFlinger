@@ -4,13 +4,7 @@ using Fusion.Sockets;
 using System.Collections.Generic;
 using System;
 using SpellFlinger.PlayScene;
-using SpellFlinger.Enum;
-using SpellFlinger.LoginScene;
-using Unity.VisualScripting;
-using UnityEngine.SceneManagement;
 using SpellFlinger.Scriptables;
-using WebSocketSharp;
-using ExitGames.Client.Photon.StructWrapping;
 
 namespace SpellSlinger.Networking
 {
@@ -25,42 +19,46 @@ namespace SpellSlinger.Networking
             {
                 _reset = false;
                 _accumulatedInput = default;
-
             }
+
+            if (CameraController.Instance && !CameraController.Instance.CameraEnabled)
+            {
+                return;
+            }
+
+            Vector2 direction = Vector2.zero;
+            NetworkButtons buttons = default;
+
+            if (Input.GetKey(KeyCode.W))
+                direction += Vector2.up;
+
+            if (Input.GetKey(KeyCode.S))
+                direction += Vector2.down;
+
+            if (Input.GetKey(KeyCode.D))
+                direction += Vector2.right;
+
+            if (Input.GetKey(KeyCode.A))
+                direction += Vector2.left;
+
+            _accumulatedInput.Direction += direction;
+
+            buttons.Set(NetworkInputData.JUMP, Input.GetKey(KeyCode.Space));
+
+            buttons.Set(NetworkInputData.SHOOT, Input.GetMouseButton(0));
+
+            _accumulatedInput.Buttons = new NetworkButtons(_accumulatedInput.Buttons.Bits | buttons.Bits);
+
+            _accumulatedInput.YRotation += Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity;
         }
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
+            _accumulatedInput.Direction.Normalize();
+            input.Set(_accumulatedInput);
 
-            //var data = new NetworkInputData();
-
-            //if (CameraController.Instance && !CameraController.Instance.CameraEnabled)
-            //{
-            //    input.Set(data);
-            //    return;
-            //}
-
-            //if (Input.GetKey(KeyCode.W))
-            //    data.YDirection++;
-
-            //if (Input.GetKey(KeyCode.S))
-            //    data.YDirection--;
-
-            //if (Input.GetKey(KeyCode.D))
-            //    data.XDirection++;
-
-            //if (Input.GetKey(KeyCode.A))
-            //    data.XDirection--;
-
-            //data.buttons.Set(NetworkInputData.JUMP, Input.GetKey(KeyCode.Space));
-
-            //data.buttons.Set(NetworkInputData.SHOOT, Input.GetMouseButton(0));
-
-            //data.YRotation = _yRotation * runner.DeltaTime;
-            //_yRotation = 0;
-
-
-            //input.Set(data);
+            _reset = true;
+            _accumulatedInput.YRotation = 0f;
         }
 
         public void OnConnectedToServer(NetworkRunner runner) { }

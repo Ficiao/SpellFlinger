@@ -49,11 +49,14 @@ namespace SpellFlinger.PlayScene
             }
         }
 
-        public static void AnimationUpdate(bool isGrounded, int leftRightDirection, int forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
+        public static void AnimationUpdate(bool isGrounded, float leftRightDirection, float forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
         {
             modelTransform.rotation = referenceTransform.rotation;
             float rotation;
             PlayerAnimationState newPlayerAnimationState;
+
+            leftRightDirection = leftRightDirection > 0 ? 1 : leftRightDirection == 0 ? 0 : -1;
+            forwardDirection = forwardDirection > 0 ? 1 : forwardDirection == 0 ? 0 : -1;
 
             switch ((leftRightDirection, forwardDirection))
             {

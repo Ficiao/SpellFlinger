@@ -1,6 +1,7 @@
 using Fusion;
 using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
+using SpellSlinger.Networking;
 using System;
 using TMPro;
 using Unity.VisualScripting;
@@ -26,50 +27,12 @@ namespace SpellFlinger.PlayScene
 
         public bool IsSlowed => _slowDuation > 0.001f;
 
-        [Networked] public NetworkString<_32> PlayerName { get; set; }
-        [Networked] public TeamType Team { get; set; }
-        [Networked] public WeaponType SelectedWeapon { get; set; }
+        [Networked, OnChangedRender(nameof(PlayerNameChanged))] public NetworkString<_32> PlayerName { get; set; }
+        [Networked, OnChangedRender(nameof(TeamChanged))] public TeamType Team { get; set; }
+        [Networked, OnChangedRender(nameof(WeaponChanged))] public WeaponType SelectedWeapon { get; set; }
         [Networked, OnChangedRender(nameof(HealthChanged))] public int Health { get; set; }
         [Networked, OnChangedRender(nameof(KillsChanged))] public int Kills { get; set; }
         [Networked, OnChangedRender(nameof(DeathsChanged))] public int Deaths { get; set; }
-
-        public override void Spawned()
-        {
-            _playerCharacterController = GetComponent<PlayerCharacterController>();
-            PlayerManager.Instance.RegisterPlayer(this);
-            _playerScoreboardData = UiManager.Instance.CreatePlayerScoarboardData();
-            if (HasStateAuthority)
-            {
-                _playerNameText.gameObject.SetActive(false);
-                Kills = 0;
-                Deaths = 0;
-                Health = _maxHealth;
-            }
-            else
-            {
-                PlayerDataSet();
-                if (Team != TeamType.None) UiManager.Instance.AddTeamScore(Team, Kills);
-                _playerScoreboardData.UpdateScore(Kills, Deaths);
-            }
-        }
-
-        public void SetPlayerData(TeamType team, WeaponType weaponType, String playerName)
-        {
-            PlayerName = playerName;
-            Team = team;
-            PlayerManager.Instance.SetFriendlyTeam(Team);
-            SelectedWeapon = weaponType;
-            PlayerDataSet();
-        }
-
-        private void PlayerDataSet()
-        {
-            _playerNameText.text = PlayerName.ToString();
-            _playerScoreboardData.Init(PlayerName.ToString());
-            _playerScoreboardData.SetTeamType(Team);
-            var weaponData = WeaponDataScriptable.Instance.GetWeaponData(SelectedWeapon);
-            _playerCharacterController.SetGloves(weaponData.GlovePrefab, weaponData.GloveLocation, weaponData.FireRate);
-        }
 
         private void LateUpdate()
         {
@@ -78,6 +41,69 @@ namespace SpellFlinger.PlayScene
 
             if (HasStateAuthority && _slowDuation > 0.001f) _slowDuation -= Time.deltaTime;
         }
+
+        public override void Spawned()
+        {
+            _playerCharacterController = GetComponent<PlayerCharacterController>();
+            PlayerManager.Instance.RegisterPlayer(this);
+            _playerScoreboardData = UiManager.Instance.CreatePlayerScoarboardData();
+            if (HasInputAuthority)
+            {
+                _playerNameText.gameObject.SetActive(false);
+                Kills = 0;
+                Deaths = 0;
+                Health = _maxHealth;
+                PlayerName = FusionConnection.Instance.PlayerName;
+                SelectedWeapon = WeaponDataScriptable.SelectedWeaponType;
+            }
+            else
+            {
+                if (Team != TeamType.None) UiManager.Instance.AddTeamScore(Team, Kills);
+                _playerScoreboardData.UpdateScore(Kills, Deaths);
+            }
+        }
+
+        private void PlayerNameChanged()
+        {
+            _playerNameText.text = PlayerName.ToString();
+            _playerScoreboardData.Init(PlayerName.ToString());
+        }
+
+        private void TeamChanged()
+        {
+            PlayerManager.Instance.SetFriendlyTeam(Team);
+            _playerScoreboardData.SetTeamType(Team);
+        }
+
+        private void WeaponChanged()
+        {
+            var weaponData = WeaponDataScriptable.Instance.GetWeaponData(SelectedWeapon);
+            _playerCharacterController.SetGloves(weaponData.GlovePrefab, weaponData.GloveLocation, weaponData.FireRate);
+        }
+
+        private void HealthChanged()
+        {
+            if (!HasStateAuthority) _healthBar.value = (float)Health / _maxHealth;
+            else UiManager.Instance.UpdateHealthBar(Health, (float)Health / _maxHealth);
+        }
+
+        private void KillsChanged()
+        {
+            if (Team == TeamType.None && HasStateAuthority)
+            {
+                UiManager.Instance.UpdateSoloScore(Kills);
+                if (Kills >= PlayerManager.Instance.SoloKillsForWin) PlayerManager.Instance.SendGameEndRpc(PlayerName.Value);
+            }
+            else if (Team != TeamType.None && Kills > 0)
+            {
+                int teamKills = UiManager.Instance.IncreaseTeamScore(Team);
+                if (teamKills >= PlayerManager.Instance.TeamKillsForWin) PlayerManager.Instance.SendGameEndRpc(Team);
+            }
+
+            _playerScoreboardData.UpdateScore(Kills, Deaths);
+        }
+
+        private void DeathsChanged() => _playerScoreboardData.UpdateScore(Kills, Deaths);
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void DealDamageRpc(int damage, PlayerStats attacker)
@@ -127,75 +153,8 @@ namespace SpellFlinger.PlayScene
 
             Color winnerColor = PlayerName == winnerName ? PlayerManager.Instance.FriendlyColor : PlayerManager.Instance.EnemyColor;
             _playerCharacterController.GameEnd(winnerName, winnerColor);
+
         }
-
-        private void HealthChanged()
-        {
-            if (!HasStateAuthority) _healthBar.value = (float)Health / _maxHealth;
-            else UiManager.Instance.UpdateHealthBar(Health, (float)Health / _maxHealth);
-        }
-
-        private void KillsChanged()
-        {
-            if (Team == TeamType.None && HasStateAuthority)
-            {
-                UiManager.Instance.UpdateSoloScore(Kills);
-                if (Kills >= PlayerManager.Instance.SoloKillsForWin) PlayerManager.Instance.SendGameEndRpc(PlayerName.Value);
-            }
-            else if (Team != TeamType.None && Kills > 0)
-            {
-                int teamKills = UiManager.Instance.IncreaseTeamScore(Team);
-                if (teamKills >= PlayerManager.Instance.TeamKillsForWin) PlayerManager.Instance.SendGameEndRpc(Team);
-            }
-
-            _playerScoreboardData.UpdateScore(Kills, Deaths);
-        }
-
-        private void DeathsChanged() => _playerScoreboardData.UpdateScore(Kills, Deaths);  
-
-        //private void CustomChangeDetector()
-        //{
-        //    if (Health != _oldHealth)
-        //    {
-        //        _oldHealth = Health;
-        //        if(!HasStateAuthority) _healthBar.value = (float)Health / _maxHealth;
-        //        else UiManager.Instance.UpdateHealthBar(Health, (float)Health / _maxHealth);
-        //    }
-
-        //    if(Kills != _oldKills || Deaths != _oldDeaths)
-        //    {
-        //        if (Team == TeamType.None)
-        //        {
-        //            if (HasStateAuthority)
-        //            {
-        //                UiManager.Instance.UpdateSoloScore(Kills);
-        //                if (Kills >= PlayerManager.Instance.SoloKillsForWin) PlayerManager.Instance.SendGameEndRpc(PlayerName.Value);
-        //            }
-        //        }
-        //        else if (Kills != _oldKills && Kills > 0)
-        //        {
-        //            int teamKills = UiManager.Instance.IncreaseTeamScore(Team);
-        //            if(teamKills >= PlayerManager.Instance.TeamKillsForWin) PlayerManager.Instance.SendGameEndRpc(Team);
-        //        }
-
-        //        _playerScoreboardData.UpdateScore(Kills, Deaths);
-        //        _oldKills = Kills;
-        //        _oldDeaths = Deaths;
-        //    }
-
-        //    if(Team != _oldTeamType && Team != TeamType.None)
-        //    {
-        //        _oldTeamType = Team;
-        //        _playerScoreboardData.SetTeamType(Team);
-        //    }
-
-        //    if(SelectedWeapon != _oldWeapon)
-        //    {
-        //        _oldWeapon = SelectedWeapon;
-        //        var weaponData = WeaponDataScriptable.Instance.GetWeaponData(SelectedWeapon);
-        //        _playerCharacterController.SetGloves(weaponData.GlovePrefab, weaponData.GloveLocation, weaponData.FireRate);
-        //    }
-        //}
 
         public void SetTeamMaterial(Material material, Color color)
         {

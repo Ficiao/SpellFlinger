@@ -96,10 +96,11 @@ namespace SpellFlinger.PlayScene
 
             if (GetInput(out NetworkInputData data))
             {
-                if (HasStateAuthority && data.buttons.IsSet(NetworkInputData.SHOOT)) Shoot();
+                if (HasStateAuthority && data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot();
 
-                _networkController.Move(data.XDirection, data.YDirection, _playerStats.IsSlowed, data.buttons.IsSet(NetworkInputData.JUMP), data.YRotation);                
-                PlayerAnimationController.AnimationUpdate(_networkController.Grounded, data.XDirection, data.YDirection, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
+                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.Buttons.IsSet(NetworkInputData.JUMP), data.YRotation);          
+                
+                PlayerAnimationController.AnimationUpdate(_networkController.Grounded, data.Direction.x , data.Direction.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
             }
         }
 

@@ -32,9 +32,6 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private TextMeshProUGUI _winnerText = null;
         private int _teamAKills = 0;
         private int _teamBKills = 0;
-        private Color _friendlyColor;
-        private Color _enemyColor;
-        private TeamType _friendlyTeamType;
 
         private void Start()
         {
@@ -50,8 +47,6 @@ namespace SpellFlinger.PlayScene
                 CameraController.Instance.CameraEnabled = false;
                 FusionConnection.Instance.LeaveSession();
             });
-
-            PlayerManager.Instance.OnPlayerTeamTypeSet += ShowTeamScore;
 
             _upDownSensitivity.value = SensitivitySettingsScriptable.Instance.UpDownMultiplier;
             _leftRightSensitivity.value = SensitivitySettingsScriptable.Instance.LeftRightMultiplier;
@@ -84,7 +79,7 @@ namespace SpellFlinger.PlayScene
             _aimCursor.SetActive(true);
         }
 
-        private void ShowTeamScore()
+        public void ShowTeamScore()
         {
             _teamScore.SetActive(true);
             _teamAScoreText.text = "Team A: " + _teamAKills;

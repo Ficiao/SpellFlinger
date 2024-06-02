@@ -56,7 +56,7 @@ namespace SpellFlinger.PlayScene
                 else if (player.Team != TeamType.None) player.SetTeamMaterial(_enemyMaterial, _enemyColor);
             });
 
-            OnPlayerTeamTypeSet.Invoke();
+            OnPlayerTeamTypeSet?.Invoke();
         }
 
         public void SendGameEndRpc(string winnerName)
