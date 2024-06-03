@@ -1,11 +1,8 @@
-namespace Fusion {
-  using System;
-  using System.Collections.Generic;
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
-  using UnityEngine.Serialization;
+namespace Fusion
+{
+    using System;
 
-  public class NetworkObjectProviderDefault : Fusion.Behaviour, INetworkObjectProvider {
+    public class NetworkObjectProviderDefault : Fusion.Behaviour, INetworkObjectProvider {
     /// <summary>
     /// If enabled, the provider will delay acquiring a prefab instance if the scene manager is busy.
     /// </summary>

@@ -1,16 +1,14 @@
 
-namespace Fusion {
+namespace Fusion
+{
+    using System.Collections.Generic;
+    using UnityEngine;
 
-  using System;
-  using System.Collections.Generic;
-  using Fusion.Analyzer;
-  using UnityEngine;
-
-  /// <summary>
-  /// Flags a MonoBehaviour class as a RunnerVisibilityControl recognized type. 
-  /// Will be included in runner visibility handling, and will be found by <see cref="EnableOnSingleRunner"/> component finds.
-  /// </summary>
-  public interface IRunnerVisibilityRecognizedType {
+    /// <summary>
+    /// Flags a MonoBehaviour class as a RunnerVisibilityControl recognized type. 
+    /// Will be included in runner visibility handling, and will be found by <see cref="EnableOnSingleRunner"/> component finds.
+    /// </summary>
+    public interface IRunnerVisibilityRecognizedType {
     
   }
 

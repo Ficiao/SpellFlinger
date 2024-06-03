@@ -1,13 +1,13 @@
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 
-  using System;
-  using System.IO;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEditor.AssetImporters;
-  using UnityEngine;
+    using System;
+    using System.IO;
+    using UnityEditor;
+    using UnityEditor.AssetImporters;
+    using UnityEngine;
 
-  [CustomEditor(typeof(NetworkProjectConfigImporter))]
+    [CustomEditor(typeof(NetworkProjectConfigImporter))]
   internal class NetworkProjectConfigImporterEditor : ScriptedImporterEditor {
 
     private Exception _initializeException;

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace SpellFlinger.Scriptables
 {
     [CreateAssetMenu(fileName = "Weapon Data Scriptable", menuName = "Weapon Data Scriptable")]
-    class WeaponDataScriptable : ScriptableObject
+    public class WeaponDataScriptable : ScriptableObject
     {
         private static WeaponType _selectedWeaponType;
         private static WeaponDataScriptable _instance;

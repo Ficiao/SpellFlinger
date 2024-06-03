@@ -9,6 +9,7 @@ namespace SpellFlinger.PlayScene
         public const byte JUMP = 2;
 
         public Vector2 Direction;
+        public Vector3 ShootTarget;
         public float YRotation;
         public NetworkButtons Buttons;
     }

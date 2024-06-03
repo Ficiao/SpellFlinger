@@ -8,9 +8,7 @@ using SpellFlinger.Enum;
 using SpellFlinger.LoginScene;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
-using SpellFlinger.Scriptables;
 using WebSocketSharp;
-using ExitGames.Client.Photon.StructWrapping;
 
 namespace SpellSlinger.Networking
 {
@@ -24,8 +22,11 @@ namespace SpellSlinger.Networking
         private NetworkSceneManagerDefault _networkSceneManager= null;
         private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new Dictionary<PlayerRef, NetworkObject>();
         private List<SessionInfo> _sessions = new List<SessionInfo>();
-        private GameModeType _gameModeType;
+        private static GameModeType _gameModeType;
+
+        public PlayerCharacterController LocalCharacterController { get; set; }
         public List<SessionInfo> Sessions => _sessions;
+        public static GameModeType GameModeType => _gameModeType;
 
         public string PlayerName => _playerName;
 
@@ -76,6 +77,8 @@ namespace SpellSlinger.Networking
         public void LeaveSession()
         {
             _runner.Shutdown();
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             SceneManager.LoadScene(0);
         }
 
@@ -95,7 +98,10 @@ namespace SpellSlinger.Networking
             if (runner.IsServer)
             {
                 NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, inputAuthority: player);
-                PlayerStats stats = playerObject.GetComponent<PlayerCharacterController>().PlayerStats;
+                _spawnedCharacters.Add(player, playerObject);
+                PlayerCharacterController characterController = playerObject.GetComponent<PlayerCharacterController>();
+                characterController.InputAuthority = player;
+                PlayerStats stats = characterController.PlayerStats;
                 if (_gameModeType == GameModeType.TDM)
                 {
                     stats.Team = PlayerManager.Instance.GetTeamWithLessPlayers();
@@ -199,7 +205,8 @@ namespace SpellSlinger.Networking
 
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
-            Debug.Log("On Shut down, reasone: " + shutdownReason.ToString());
+            Debug.Log("On Shut down, reason: " + shutdownReason.ToString());
+            LeaveSession();
         }
 
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)

@@ -1,5 +1,6 @@
 ﻿using Fusion;
 using SpellFlinger.Enum;
+using SpellSlinger.Networking;
 using System.Linq;
 using UnityEngine;
 
@@ -37,8 +38,8 @@ namespace SpellFlinger.PlayScene
 
                 PlayerStats player = collider.GetComponent<PlayerStats>();
 
-                if (player.Object.StateAuthority == _ownerPlayerRef) continue;
-                if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
+                if (player.Object.InputAuthority == _ownerPlayerRef) continue;
+                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == _ownerPlayerStats.Team) continue;
 
                 player.DealDamageRpc(_damage, _ownerPlayerStats);
                 _hitPlayer = player;
@@ -68,7 +69,7 @@ namespace SpellFlinger.PlayScene
                 PlayerStats player = collider.GetComponent<PlayerStats>();
 
                 if (player.Object.StateAuthority == _ownerPlayerRef) continue;
-                if (_ownerPlayerStats.Team != TeamType.None && player.Team == _ownerPlayerStats.Team) continue;
+                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == _ownerPlayerStats.Team) continue;
                 if (player == _hitPlayer) continue;
 
                 player.DealDamageRpc(_damage, _ownerPlayerStats);

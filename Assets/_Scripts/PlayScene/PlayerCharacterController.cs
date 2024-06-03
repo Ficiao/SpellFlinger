@@ -1,7 +1,7 @@
 using Fusion;
 using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
-using System;
+using SpellSlinger.Networking;
 using System.Collections;
 using UnityEngine;
 
@@ -13,6 +13,7 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Transform _cameraStartTarget = null;
         [SerializeField] private Transform _cameraAimTarget = null;
         [SerializeField] private NetworkCharacterController _networkController;
+        [SerializeField] private CharacterController _characterController;
         [SerializeField] private int _respawnTime = 0;
         [SerializeField] private Transform _shootOrigin;
         [SerializeField] private PlayerStats _playerStats = null;
@@ -20,18 +21,20 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Transform _modelLeftHand = null;
         [SerializeField] private Transform _modelRightHand = null;
         [SerializeField] private Animator _playerAnimator = null;
+        [SerializeField] private float _fireRate = 0;
+        private PlayerAnimationController _playerAnimationController = null;
         private CameraController _cameraController = null;
         private Projectile _projectilePrefab = null;
         private PlayerAnimationState _playerAnimationState = PlayerAnimationState.Idle;
-        [SerializeField] private float _fireRate = 0;
         private float _fireCooldown = 0;
-        private bool _respawnReady = false;
         private IEnumerator _respawnCoroutine = null;
 
         public PlayerStats PlayerStats => _playerStats;
+        public PlayerRef InputAuthority {  get; set; }
 
         public override void Spawned()
         {
+            _playerAnimationController = new();
             if (HasInputAuthority) InitializeClient();
             if (Runner.IsServer) InitializeServer();
         }
@@ -41,31 +44,26 @@ namespace SpellFlinger.PlayScene
             _cameraController = CameraController.Instance;
             _cameraController.transform.parent = _cameraEndTarget;
             _cameraController.Init(_cameraStartTarget, _cameraEndTarget);            
-            PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
+            _playerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
+            FusionConnection.Instance.LocalCharacterController = this;
         }
 
         private void InitializeServer()
         {
             _networkController.Teleport(SpawnLocationManager.Instance.GetRandomSpawnLocation());
-            _projectilePrefab = WeaponDataScriptable.Instance.GetWeaponData(WeaponDataScriptable.SelectedWeaponType).WeaponPrefab;
-            PlayerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
+            _playerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
         }
 
-        public void SetGloves(GameObject glovesPrefab, Vector3 position, float fireRate)
+        public void SetWeapon(WeaponDataScriptable.WeaponData data)
         {
-            Instantiate(glovesPrefab, _modelLeftHand).transform.localPosition = position;
-            Instantiate(glovesPrefab, _modelRightHand).transform.localPosition = position;
-            _fireRate = fireRate;
+            _projectilePrefab = data.WeaponPrefab;
+            Instantiate(data.GlovePrefab, _modelLeftHand).transform.localPosition = data.GloveLocation;
+            Instantiate(data.GlovePrefab, _modelRightHand).transform.localPosition = data.GloveLocation;
+            _fireRate = data.FireRate;
         }
 
-        private void Shoot()
+        public Vector3 GetShootDirection()
         {
-            if (Time.time < _fireCooldown) return;
-
-            _fireCooldown = Time.time + _fireRate;
-            PlayerAnimationController.PlayShootAnimation(_playerAnimator);
-
-            Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
             RaycastHit[] hits = Physics.RaycastAll(_cameraController.transform.position, _cameraController.transform.forward);
             foreach (RaycastHit hit in hits)
             {
@@ -83,40 +81,86 @@ namespace SpellFlinger.PlayScene
                     Debug.Log("Bad shoot");
                 }
 
-                projectile.Throw(shootDirection, Runner.LocalPlayer, _playerStats);
-                break;
+                return shootDirection;
             }
+
+            return _cameraAimTarget.position - _shootOrigin.position; ; 
+        }
+
+        private void Shoot(Vector3 shootDirection)
+        {
+            if (Time.time < _fireCooldown) return;
+
+            _fireCooldown = Time.time + _fireRate;
+            _playerAnimationController.PlayShootAnimation(_playerAnimator);
+
+            Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
+            projectile.Throw(shootDirection, InputAuthority, _playerStats);
         }
 
         public override void FixedUpdateNetwork()
         {
-            if(_respawnReady) Respawn();
-
-            if (_playerStats.Health <= 0 || _networkController.enabled == false) return;
+            if (_playerStats.Health <= 0 || _characterController.enabled == false) return;
 
             if (GetInput(out NetworkInputData data))
             {
-                if (HasStateAuthority && data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot();
+                if (HasStateAuthority && data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot(data.ShootTarget);
 
-                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.Buttons.IsSet(NetworkInputData.JUMP), data.YRotation);          
-                
-                PlayerAnimationController.AnimationUpdate(_networkController.Grounded, data.Direction.x , data.Direction.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
+                _playerAnimationController.AnimationUpdate(_networkController.Grounded, data.Direction.x , data.Direction.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
+                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.Buttons.IsSet(NetworkInputData.JUMP), data.YRotation);             
             }
         }
 
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public void DisableControllerRpc()
+        //This is called on server host, so HasStateAuthority is set to true
+        public void PlayerKilled()
         {
-            if (HasStateAuthority) return;
-            _networkController.enabled = false;
+            _respawnCoroutine = RespawnCoroutine();
+            StartCoroutine(_respawnCoroutine);
+        }
+
+        //This is called on local player with InputAuthority
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_PlayerKilled()
+        {
+            _respawnCoroutine = RespawnTimer();
+            StartCoroutine(_respawnCoroutine);
+        }
+
+        private IEnumerator RespawnTimer()
+        {
+            _playerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
+            UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
+            _cameraController.CameraEnabled = false;
+
+            for (int i = 1; i < _respawnTime; i++)
+            {
+                yield return new WaitForSeconds(1);
+                UiManager.Instance.UpdateDeathTimer(_respawnTime - i);
+            }
+
+            UiManager.Instance.HideDeathTimer();
+            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
+            _cameraController.CameraEnabled = true;
+            _respawnCoroutine = null;
+        }
+
+        private IEnumerator RespawnCoroutine()
+        {
+            RPC_DisableController();
+
+            yield return new WaitForSeconds(_respawnTime);
+
+            _playerStats.ResetHealth();
+            RPC_EnableController();
+            _networkController.Teleport(SpawnLocationManager.Instance.GetRandomSpawnLocation());
+            _characterController.enabled = true;
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
-        public void EnableControllerRpc()
-        {
-            if (HasStateAuthority) return;
-            _networkController.enabled = true;
-        }
+        public void RPC_DisableController() => _characterController.enabled = false;
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RPC_EnableController() => _characterController.enabled = true;
 
         public void GameEnd(TeamType winnerTeam, Color winnerColor)
         {
@@ -149,45 +193,8 @@ namespace SpellFlinger.PlayScene
 
             yield return new WaitForSeconds(7);
 
-            _respawnReady = true;
             UiManager.Instance.HideEndGameScreen();
             PlayerManager.Instance.ResetGameStats();
-        }
-
-        public void PlayerKilled()
-        {
-            PlayerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
-            _respawnCoroutine = RespawnCD();
-            StartCoroutine(_respawnCoroutine);
-        }
-
-        private IEnumerator RespawnCD()
-        {
-            UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
-            _cameraController.CameraEnabled = false;
-            _networkController.enabled = false;
-            DisableControllerRpc();
-
-            for (int i = 1; i < _respawnTime; i++)
-            {
-                yield return new WaitForSeconds(1);
-                UiManager.Instance.UpdateDeathTimer(_respawnTime - i);
-            }
-
-            _respawnReady = true;
-            _respawnCoroutine = null;
-        }
-
-        private void Respawn()
-        {
-            _respawnReady = false;
-            _playerStats.ResetHealth();
-            UiManager.Instance.HideDeathTimer();
-            PlayerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
-            transform.position = SpawnLocationManager.Instance.GetRandomSpawnLocation();
-            EnableControllerRpc();
-            _networkController.enabled = true;
-            _cameraController.CameraEnabled = true;
-        }
+        }        
     }
 }

@@ -3,36 +3,36 @@ using SpellFlinger.Enum;
 
 namespace SpellFlinger.PlayScene
 {
-    public static class PlayerAnimationController
+    public  class PlayerAnimationController
     {
-        private static float _currentAngle = 0;
-        private static float _deltaAngle = 0.3f;
-        private static float _lerpCutoff = 0.01f;
-        private static bool _isLeftAttack = false;
-        private static int _animationStateParameterId = 0;
+        private float _currentAngle = 0;
+        private float _deltaAngle = 0.3f;
+        private float _lerpCutoff = 0.01f;
+        private bool _isLeftAttack = false;
+        private int _animationStateParameterId = 0;
 
-        public static void Init(ref PlayerAnimationState animationState, Animator animator)
+        public void Init(ref PlayerAnimationState animationState, Animator animator)
         {
             _animationStateParameterId = Animator.StringToHash("AnimationState");
             animationState = PlayerAnimationState.Idle;
             animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void SetDeadState(ref PlayerAnimationState animationState, Animator animator)
+        public void SetDeadState(ref PlayerAnimationState animationState, Animator animator)
         {
             animationState = PlayerAnimationState.Dead;
             animator.SetBool("DeadState", true);
             animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void SetAliveState(ref PlayerAnimationState animationState, Animator animator)
+        public void SetAliveState(ref PlayerAnimationState animationState, Animator animator)
         {
             animationState = PlayerAnimationState.Idle;
             animator.SetBool("DeadState", false);
             animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void PlayShootAnimation(Animator animator)
+        public void PlayShootAnimation(Animator animator)
         {
             animator.SetLayerWeight(1, 1);
             if (_isLeftAttack)
@@ -49,7 +49,7 @@ namespace SpellFlinger.PlayScene
             }
         }
 
-        public static void AnimationUpdate(bool isGrounded, float leftRightDirection, float forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
+        public void AnimationUpdate(bool isGrounded, float leftRightDirection, float forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
         {
             modelTransform.rotation = referenceTransform.rotation;
             float rotation;
@@ -110,7 +110,7 @@ namespace SpellFlinger.PlayScene
             ApplyAnimation(newPlayerAnimationState, ref animationState, _currentAngle, animator, modelTransform);
         }
 
-        private static void ApplyAnimation(PlayerAnimationState playerAnimation, ref PlayerAnimationState currentAnimation, float rotation, Animator animator, Transform modelTransform)
+        private void ApplyAnimation(PlayerAnimationState playerAnimation, ref PlayerAnimationState currentAnimation, float rotation, Animator animator, Transform modelTransform)
         {
             if(currentAnimation != playerAnimation)
             {

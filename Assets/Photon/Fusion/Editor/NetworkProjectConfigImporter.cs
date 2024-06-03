@@ -1,15 +1,14 @@
-namespace Fusion.Editor {
-  using System;
-  using System.Collections;
-  using System.Collections.Generic;
-  using System.IO;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEditor.AssetImporters;
-  using UnityEditor.PackageManager;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEditor.AssetImporters;
+    using UnityEngine;
 
-  [ScriptedImporter(3, ExtensionWithoutDot, ImportQueueOffset)]
+    [ScriptedImporter(3, ExtensionWithoutDot, ImportQueueOffset)]
   public class NetworkProjectConfigImporter : ScriptedImporter {
     public const string ExtensionWithoutDot = "fusion";
     public const string Extension = "." + ExtensionWithoutDot;

@@ -119,17 +119,17 @@ namespace SpellFlinger.PlayScene
             }
         }
 
-        public int AddTeamScore(TeamType team, int amount)
+        public int SetTeamScore(TeamType team, int amount)
         {
             if (team == TeamType.TeamA)
             {
-                _teamAKills += amount;
+                _teamAKills = amount;
                 _teamAScoreText.text = "Team A: " + _teamAKills.ToString();
                 return _teamAKills;
             }
             else
             {
-                _teamBKills += amount;
+                _teamBKills = amount;
                 _teamBScoreText.text = "Team B: " + _teamBKills.ToString();
                 return _teamBKills;
             }

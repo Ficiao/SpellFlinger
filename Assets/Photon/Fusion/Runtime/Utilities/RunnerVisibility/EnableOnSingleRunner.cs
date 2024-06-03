@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using Fusion.Analyzer;
 using UnityEngine;
 
-namespace Fusion {
-  
-  #if UNITY_EDITOR
-  using UnityEditor;
-  #endif
+namespace Fusion
+{
+
+#if UNITY_EDITOR
+#endif
 
 
-  /// <summary>
-  /// Automatically adds a <see cref="RunnerVisibilityLink"/> for each indicated component. 
-  /// These indicated components will be limited to no more than one enabled instance when running in Multi-Peer mode.
-  /// </summary>
-  [AddComponentMenu("Fusion/Enable On Single Runner")]
+    /// <summary>
+    /// Automatically adds a <see cref="RunnerVisibilityLink"/> for each indicated component. 
+    /// These indicated components will be limited to no more than one enabled instance when running in Multi-Peer mode.
+    /// </summary>
+    [AddComponentMenu("Fusion/Enable On Single Runner")]
   public class EnableOnSingleRunner : Fusion.Behaviour {
 
     /// <summary>

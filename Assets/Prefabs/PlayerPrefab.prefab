@@ -269,6 +269,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 494141239846147398}
+  - component: {fileID: 5009147955394986204}
   m_Layer: 0
   m_Name: Knight
   m_TagString: Untagged
@@ -293,6 +294,22 @@ Transform:
   m_Father: {fileID: 8021553351502256923}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5009147955394986204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977380601174085628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
 --- !u!1 &1032506526615940263
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,10 +692,10 @@ GameObject:
   - component: {fileID: 4082986052222582566}
   - component: {fileID: 9045017206345643455}
   - component: {fileID: 646171336720109413}
-  - component: {fileID: 7645790273635992488}
   - component: {fileID: 3731807080013286866}
-  - component: {fileID: 7112313210611333801}
+  - component: {fileID: 7645790273635992488}
   - component: {fileID: 160892964657384794}
+  - component: {fileID: 7112313210611333801}
   m_Layer: 0
   m_Name: PlayerPrefab
   m_TagString: Player
@@ -739,6 +756,7 @@ MonoBehaviour:
   _cameraStartTarget: {fileID: 9007967519532418105}
   _cameraAimTarget: {fileID: 1643971804558793738}
   _networkController: {fileID: 9045017206345643455}
+  _characterController: {fileID: 7624302876728446786}
   _respawnTime: 5
   _shootOrigin: {fileID: 5309609598348471599}
   _playerStats: {fileID: 646171336720109413}
@@ -762,7 +780,7 @@ MonoBehaviour:
   gravity: -30
   jumpImpulse: 17
   rotationSpeed: 65
-  moveSpeed: 8.5
+  moveSpeed: 7.5
   gravityBurst: 2
   slowAmount: 0.6
   doubleJumpBoost: 20
@@ -784,7 +802,6 @@ MonoBehaviour:
   _healthBar: {fileID: 8317053018782927964}
   _maxHealth: 100
   _playerModel: {fileID: 7544048933497512450}
-  _isGameEnd: 0
   _PlayerName:
     _length: 0
     _data:
@@ -794,6 +811,23 @@ MonoBehaviour:
   _Health: 0
   _Kills: 0
   _Deaths: 0
+  _SlowDuration: 0
+--- !u!54 &3731807080013286866
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3485277354548307455}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!95 &7645790273635992488
 Animator:
   serializedVersion: 5
@@ -815,22 +849,24 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!54 &3731807080013286866
-Rigidbody:
+--- !u!114 &160892964657384794
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3485277354548307455}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 506319458, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Animator: {fileID: 7645790273635992488}
+  TotalWords: 7
+  ApplyTiming: 2
+  SyncSettings: 127
+  StateHashes: 000000002b1a167c79406955d16aa283742e453c6524f6d37fb5cc392638cb43a21b1dac2afa8626a8b5caa3f1afa2df82d5e08fe8e2f5a1efdb80c23164a959ab84aec7
+  TriggerHashes: 00000000
 --- !u!114 &7112313210611333801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -852,24 +888,7 @@ MonoBehaviour:
   - {fileID: 9045017206345643455}
   - {fileID: 646171336720109413}
   - {fileID: 160892964657384794}
---- !u!114 &160892964657384794
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3485277354548307455}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 506319458, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Animator: {fileID: 7645790273635992488}
-  TotalWords: 7
-  ApplyTiming: 2
-  SyncSettings: 127
-  StateHashes: 000000002b1a167c79406955d16aa283742e453c6524f6d37fb5cc392638cb43a21b1dac2afa8626a8b5caa3f1afa2df82d5e08fe8e2f5a1efdb80c23164a959ab84aec7
-  TriggerHashes: 00000000
+  - {fileID: 5009147955394986204}
 --- !u!1 &3711059551203103290
 GameObject:
   m_ObjectHideFlags: 0

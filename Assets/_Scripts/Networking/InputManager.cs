@@ -46,6 +46,7 @@ namespace SpellSlinger.Networking
             buttons.Set(NetworkInputData.JUMP, Input.GetKey(KeyCode.Space));
 
             buttons.Set(NetworkInputData.SHOOT, Input.GetMouseButton(0));
+            if (Input.GetMouseButton(0)) _accumulatedInput.ShootTarget = FusionConnection.Instance.LocalCharacterController.GetShootDirection();
 
             _accumulatedInput.Buttons = new NetworkButtons(_accumulatedInput.Buttons.Bits | buttons.Bits);
 
