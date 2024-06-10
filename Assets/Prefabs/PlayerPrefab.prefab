@@ -758,6 +758,7 @@ MonoBehaviour:
   _networkController: {fileID: 9045017206345643455}
   _characterController: {fileID: 7624302876728446786}
   _respawnTime: 5
+  _gameEndTime: 7
   _shootOrigin: {fileID: 5309609598348471599}
   _playerStats: {fileID: 646171336720109413}
   _playerModel: {fileID: 977380601174085628}
@@ -765,6 +766,8 @@ MonoBehaviour:
   _modelRightHand: {fileID: 1793733794221526373}
   _playerAnimator: {fileID: 7645790273635992488}
   _fireRate: 0
+  _RemainingRespawnTime: 0
+  _RemainingGameEndTime: 0
 --- !u!114 &9045017206345643455
 MonoBehaviour:
   m_ObjectHideFlags: 0

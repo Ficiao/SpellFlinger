@@ -1,10 +1,8 @@
 using Fusion;
-using JetBrains.Annotations;
 using SpellFlinger.Enum;
 using SpellFlinger.Scriptables;
 using SpellSlinger.Networking;
 using System;
-using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -24,6 +22,7 @@ namespace SpellFlinger.PlayScene
 
         public Action OnSpawnedCallback;
 
+        public PlayerCharacterController PlayerCharacterController => _playerCharacterController;
         public bool IsSlowed => SlowDuration > 0.001f;
 
         [Networked, OnChangedRender(nameof(PlayerNameChanged))] public NetworkString<_32> PlayerName { get; set; }
@@ -50,10 +49,13 @@ namespace SpellFlinger.PlayScene
             _playerCharacterController = GetComponent<PlayerCharacterController>();
             _playerScoreboardData = UiManager.Instance.CreatePlayerScoarboardData();
             PlayerManager.Instance.RegisterPlayer(this);
+            
             if (HasInputAuthority)
             {
                 _playerNameText.gameObject.SetActive(false);
                 RPC_InitializeData(FusionConnection.Instance.PlayerName, WeaponDataScriptable.SelectedWeaponType);
+                if (FusionConnection.GameModeType == GameModeType.DM) UiManager.Instance.ShowSoloScore();
+                else if (FusionConnection.GameModeType == GameModeType.TDM) UiManager.Instance.ShowTeamScore();
             }
 
             if(PlayerName.Value != default) PlayerNameChanged();
@@ -72,18 +74,7 @@ namespace SpellFlinger.PlayScene
             Health = _maxHealth;
             PlayerName = playerName;
             SelectedWeapon = selectedWeapon;
-
-            if(FusionConnection.GameModeType == GameModeType.TDM)
-            {
-                foreach (TeamType teamType in (TeamType[])System.Enum.GetValues(typeof(TeamType)))
-                {
-                    RPC_SetInitialTeamKills(teamType, PlayerManager.Instance.GetTeamKills(teamType));
-                }
-            }
         }
-
-        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode =RpcHostMode.SourceIsServer)]
-        public void RPC_SetInitialTeamKills(TeamType team, int kills) => UiManager.Instance.SetTeamScore(team, kills);
 
         private void PlayerNameChanged()
         {
@@ -106,24 +97,21 @@ namespace SpellFlinger.PlayScene
 
         private void HealthChanged()
         {
-            if (!HasStateAuthority) _healthBar.value = (float)Health / _maxHealth;
+            if (!HasInputAuthority) _healthBar.value = (float)Health / _maxHealth;
             else UiManager.Instance.UpdateHealthBar(Health, (float)Health / _maxHealth);
         }
 
         private void KillsChanged()
         {
             if (FusionConnection.GameModeType == GameModeType.DM && HasInputAuthority) UiManager.Instance.UpdateSoloScore(Kills);
-            else if (FusionConnection.GameModeType == GameModeType.TDM) UiManager.Instance.IncreaseTeamScore(Team);
+            else if (FusionConnection.GameModeType == GameModeType.TDM) UiManager.Instance.UpdateTeamScore();
 
             _playerScoreboardData.UpdateScore(Kills, Deaths);
-
-            if (!HasStateAuthority) return;
         }
 
         private void DeathsChanged() => _playerScoreboardData.UpdateScore(Kills, Deaths);
 
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
-        public void DealDamageRpc(int damage, PlayerStats attacker)
+        public void DealDamage(int damage, PlayerStats attacker)
         {
             if (Health - damage <= 0)
             {
@@ -133,15 +121,15 @@ namespace SpellFlinger.PlayScene
                     attacker.Kills++;
                     _playerCharacterController.PlayerKilled();
 
-                    if (FusionConnection.GameModeType == GameModeType.DM && Kills >= PlayerManager.Instance.SoloKillsForWin)
+                    if (FusionConnection.GameModeType == GameModeType.DM && attacker.Kills >= GameManager.Instance.SoloKillsForWin)
                     {
-                        PlayerManager.Instance.SendGameEndRpc(PlayerName.Value);
+                        GameManager.Instance.GameEnd(attacker.PlayerName.Value);
                     }
                     else if (FusionConnection.GameModeType == GameModeType.TDM)
                     {
-                        PlayerManager.Instance.AddTeamKill(Team);
-                        if(PlayerManager.Instance.GetTeamKills(Team) >= PlayerManager.Instance.TeamKillsForWin) 
-                        PlayerManager.Instance.SendGameEndRpc(Team);
+                        GameManager.Instance.AddTeamKill(attacker.Team);
+                        if(GameManager.Instance.GetTeamKills(attacker.Team) >= GameManager.Instance.TeamKillsForWin) 
+                        GameManager.Instance.GameEnd(attacker.Team);
                     }
                 }
                 Health = 0;
@@ -149,25 +137,15 @@ namespace SpellFlinger.PlayScene
             else Health -= damage;
         }
 
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
-        public void ApplySlowRpc(float duration) => SlowDuration = duration;
+        public void Heal(int healAmount)
+        {
+            Health += healAmount;
+            if(Health > _maxHealth) Health  = _maxHealth;
+        }
+
+        public void ApplySlow(float duration) => SlowDuration = duration;
 
         public void ResetHealth() => Health = _maxHealth;
-
-        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
-        public void GameEndRpc(TeamType winnerTeam)
-        {
-            Color winnerColor = Team == winnerTeam ? PlayerManager.Instance.FriendlyColor : PlayerManager.Instance.EnemyColor;
-            _playerCharacterController.GameEnd(winnerTeam, winnerColor);
-        }
-
-        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
-        public void GameEndRpc(string winnerName)
-        {
-            Color winnerColor = PlayerName == winnerName ? PlayerManager.Instance.FriendlyColor : PlayerManager.Instance.EnemyColor;
-            _playerCharacterController.GameEnd(winnerName, winnerColor);
-
-        }
 
         public void SetTeamMaterial(Material material, Color color)
         {
@@ -182,7 +160,7 @@ namespace SpellFlinger.PlayScene
         {
             Kills = 0;
             Deaths = 0;
-            UiManager.Instance.ResetScore();
+            Health = _maxHealth;
         }
 
         private void OnDestroy()

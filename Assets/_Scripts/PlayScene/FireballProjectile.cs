@@ -16,19 +16,18 @@ namespace SpellFlinger.PlayScene
         private bool _exploded = false;
         private PlayerStats _hitPlayer = null;
 
-        public override void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats)
+        public override void Throw(Vector3 direction, PlayerStats ownerPlayerStats)
         {
-            _direction = direction.normalized * _movementSpeed;
-            _ownerPlayerRef = ownerPlayerRef;
-            _ownerPlayerStats = ownerPlayerStats;
+            Direction = direction.normalized * _movementSpeed;
+            OwnerPlayerStats = ownerPlayerStats;
+            transform.rotation = Quaternion.FromToRotation(transform.forward, Direction.normalized);
         }
 
         public override void FixedUpdateNetwork()
         {
             if (_exploded) return;
 
-            transform.Translate(_direction * Runner.DeltaTime);
-            _effectModel.transform.rotation = Quaternion.FromToRotation(transform.forward, _direction.normalized);
+            transform.position += (Direction * Runner.DeltaTime);
 
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);
 
@@ -38,10 +37,10 @@ namespace SpellFlinger.PlayScene
 
                 PlayerStats player = collider.GetComponent<PlayerStats>();
 
-                if (player.Object.InputAuthority == _ownerPlayerRef) continue;
-                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == _ownerPlayerStats.Team) continue;
+                if (player.Object.InputAuthority == OwnerPlayerStats.Object.InputAuthority) continue;
+                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == OwnerPlayerStats.Team) continue;
 
-                player.DealDamageRpc(_damage, _ownerPlayerStats);
+                player.DealDamage(_damage, OwnerPlayerStats);
                 _hitPlayer = player;
                 Explode();
 
@@ -58,7 +57,7 @@ namespace SpellFlinger.PlayScene
 
             _projectileEffect.SetActive(false);
             _explosionEffect.SetActive(true);
-            ExplodeEffectRpc();
+            RPC_ExplodeEffect();
 
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, _explosionRange);
 
@@ -68,24 +67,26 @@ namespace SpellFlinger.PlayScene
 
                 PlayerStats player = collider.GetComponent<PlayerStats>();
 
-                if (player.Object.StateAuthority == _ownerPlayerRef) continue;
-                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == _ownerPlayerStats.Team) continue;
+                if (player.Object.InputAuthority == OwnerPlayerStats.Object.InputAuthority) continue;
+                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == OwnerPlayerStats.Team) continue;
                 if (player == _hitPlayer) continue;
 
-                player.DealDamageRpc(_damage, _ownerPlayerStats);
+                player.DealDamage(_damage, OwnerPlayerStats);
             }
 
             Destroy(gameObject, _explosionDuration);
         }
 
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public void ExplodeEffectRpc()
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_ExplodeEffect()
         {
             if (HasStateAuthority) return;
             _projectileEffect.SetActive(false);
             _explosionEffect.SetActive(true);
         }
 
+
+        //This code can be used for testing hit range
         //private void Update()
         //{
         //    Collider[] hitColliders = Physics.OverlapSphere(transform.position, _explosionRange);

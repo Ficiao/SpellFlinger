@@ -11,49 +11,67 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private float _range = 0f;
         [SerializeField] private float _dissolveDelay = 0f;
         [SerializeField] private float _slowDuration = 0f;
-        private bool _stopped = false;
+        [SerializeField] private GameObject _projectileModel = null;
+        
+        [Networked] public bool ProjectileHit { get; private set; }
 
-        public override void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats)
+        public override void Throw(Vector3 direction, PlayerStats ownerPlayerStats)
         {
-            _direction = direction.normalized * _movementSpeed;
-            _ownerPlayerRef = ownerPlayerRef;
-            _ownerPlayerStats = ownerPlayerStats;
+            Direction = direction.normalized * _movementSpeed;
+            OwnerPlayerStats = ownerPlayerStats;
+            transform.rotation = Quaternion.FromToRotation(transform.forward, Direction.normalized);
         }
 
         public override void FixedUpdateNetwork()
         {
-            if (_stopped) return;
+            if (ProjectileHit) return;
 
-            transform.Translate(_direction * Runner.DeltaTime);
-            _effectModel.transform.rotation = Quaternion.FromToRotation(transform.forward, _direction.normalized);
+            transform.position += (Direction * Runner.DeltaTime);
+
+            if (!HasStateAuthority) return;
 
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);
 
             foreach (Collider collider in hitColliders)
             {
-                if (collider.tag != "Player") continue;
+                if (collider.tag == "Player")
+                {
+                    PlayerStats player = collider.GetComponent<PlayerStats>();
 
-                PlayerStats player = collider.GetComponent<PlayerStats>();
+                    if (player.Object.InputAuthority == OwnerPlayerStats.Object.InputAuthority) continue;
+                    if (FusionConnection.GameModeType == GameModeType.TDM && player.Team != OwnerPlayerStats.Team)
+                    {
 
-                if (player.Object.InputAuthority == _ownerPlayerRef) continue;
-                if (FusionConnection.GameModeType == GameModeType.TDM && player.Team == _ownerPlayerStats.Team) continue;
+                        player.DealDamage(_damage, OwnerPlayerStats);
+                        player.ApplySlow(_slowDuration);
+                    }
 
-                player.DealDamageRpc(_damage, _ownerPlayerStats);
-                player.ApplySlowRpc(_slowDuration);
-                _stopped = true;
-                Destroy(gameObject, _dissolveDelay);
-                transform.parent = player.transform;
+                    ProjectileHit = true;
+                    _projectileModel.transform.parent = player.transform;
+                    RPC_LockModelToPlayer(_projectileModel.transform.localPosition, player);
+                    Destroy(gameObject, _dissolveDelay);
 
-                break;
-            }
+                    break;
+                }
 
-            if (!_stopped && hitColliders.Any((collider) => collider.tag == "Ground"))
-            {
-                _stopped = true;
-                Destroy(gameObject, _dissolveDelay);
+                if(hitColliders.Any(collider => collider.tag == "Ground"))
+                {
+                    ProjectileHit = true;
+                    Destroy(gameObject, _dissolveDelay);
+                }
             }
         }
 
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_LockModelToPlayer(Vector3 localPosition, PlayerStats player)
+        {
+            _projectileModel.transform.parent = player.transform;
+            _projectileModel.transform.localPosition = localPosition;
+            Destroy(_projectileModel.gameObject, _dissolveDelay);
+        }
+
+
+        //This code can be used for testing hit range
         //private void Update()
         //{
         //    Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);

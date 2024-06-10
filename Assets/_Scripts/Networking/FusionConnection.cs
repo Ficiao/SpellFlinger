@@ -16,6 +16,7 @@ namespace SpellSlinger.Networking
     {
         private static string _playerName = null;
         [SerializeField] private PlayerCharacterController _playerPrefab = null;
+        [SerializeField] private GameManager _gameManagerPrefab = null;
         [SerializeField] private NetworkRunner _networkRunnerPrefab = null;
         [SerializeField] private int _playerCount = 10;
         private NetworkRunner _runner = null;
@@ -63,9 +64,10 @@ namespace SpellSlinger.Networking
             });
         }
 
-        public async void JoinSession(string sessionName)
+        public async void JoinSession(string sessionName, GameModeType gameMode)
         {
             _runner.ProvideInput = true;
+            _gameModeType = gameMode;
 
             await _runner.StartGame(new StartGameArgs()
             {
@@ -97,21 +99,19 @@ namespace SpellSlinger.Networking
             Debug.Log("On Player Joined");
             if (runner.IsServer)
             {
+                if (player == runner.LocalPlayer)
+                {
+                    HealingPointSpawner.Instance.SpawnHealingPoints(runner);
+                    runner.Spawn(_gameManagerPrefab);
+                }
+
                 NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, inputAuthority: player);
                 _spawnedCharacters.Add(player, playerObject);
                 PlayerCharacterController characterController = playerObject.GetComponent<PlayerCharacterController>();
-                characterController.InputAuthority = player;
+
                 PlayerStats stats = characterController.PlayerStats;
-                if (_gameModeType == GameModeType.TDM)
-                {
-                    stats.Team = PlayerManager.Instance.GetTeamWithLessPlayers();
-                    UiManager.Instance.ShowTeamScore();
-                }
-                else if(_gameModeType == GameModeType.DM)
-                {
-                    stats.Team = TeamType.None;
-                    UiManager.Instance.ShowSoloScore();
-                }
+                if (_gameModeType == GameModeType.TDM) stats.Team = PlayerManager.Instance.GetTeamWithLessPlayers();
+                else if(_gameModeType == GameModeType.DM) stats.Team = TeamType.None;
             }
         }
 

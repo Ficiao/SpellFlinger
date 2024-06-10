@@ -28,9 +28,10 @@ namespace SpellFlinger.PlayScene
         private PlayerAnimationState _playerAnimationState = PlayerAnimationState.Idle;
         private float _fireCooldown = 0;
         private IEnumerator _respawnCoroutine = null;
+        private bool _resetPosition = false;
 
+        [Networked, OnChangedRender(nameof(RespawnTimeChanged))] public int RemainingRespawnTime { get; private set; }
         public PlayerStats PlayerStats => _playerStats;
-        public PlayerRef InputAuthority {  get; set; }
 
         public override void Spawned()
         {
@@ -41,11 +42,11 @@ namespace SpellFlinger.PlayScene
 
         private void InitializeClient()
         {
+            FusionConnection.Instance.LocalCharacterController = this;
             _cameraController = CameraController.Instance;
             _cameraController.transform.parent = _cameraEndTarget;
             _cameraController.Init(_cameraStartTarget, _cameraEndTarget);            
             _playerAnimationController.Init(ref _playerAnimationState, _playerAnimator);
-            FusionConnection.Instance.LocalCharacterController = this;
         }
 
         private void InitializeServer()
@@ -95,11 +96,18 @@ namespace SpellFlinger.PlayScene
             _playerAnimationController.PlayShootAnimation(_playerAnimator);
 
             Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
-            projectile.Throw(shootDirection, InputAuthority, _playerStats);
+            projectile.Throw(shootDirection, _playerStats);
         }
 
         public override void FixedUpdateNetwork()
         {
+            if(_resetPosition)
+            {
+                _networkController.enabled = true;
+                _networkController.Teleport(SpawnLocationManager.Instance.GetRandomSpawnLocation());
+                _resetPosition = false;
+            }
+
             if (_playerStats.Health <= 0 || _characterController.enabled == false) return;
 
             if (GetInput(out NetworkInputData data))
@@ -114,87 +122,99 @@ namespace SpellFlinger.PlayScene
         //This is called on server host, so HasStateAuthority is set to true
         public void PlayerKilled()
         {
+            RemainingRespawnTime = _respawnTime;
             _respawnCoroutine = RespawnCoroutine();
             StartCoroutine(_respawnCoroutine);
-        }
-
-        //This is called on local player with InputAuthority
-        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
-        public void RPC_PlayerKilled()
-        {
-            _respawnCoroutine = RespawnTimer();
-            StartCoroutine(_respawnCoroutine);
-        }
-
-        private IEnumerator RespawnTimer()
-        {
-            _playerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
-            UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
-            _cameraController.CameraEnabled = false;
-
-            for (int i = 1; i < _respawnTime; i++)
-            {
-                yield return new WaitForSeconds(1);
-                UiManager.Instance.UpdateDeathTimer(_respawnTime - i);
-            }
-
-            UiManager.Instance.HideDeathTimer();
-            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
-            _cameraController.CameraEnabled = true;
-            _respawnCoroutine = null;
+            RPC_PlayerKilled();
         }
 
         private IEnumerator RespawnCoroutine()
         {
             RPC_DisableController();
+            _playerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
 
-            yield return new WaitForSeconds(_respawnTime);
+            for(int i = RemainingRespawnTime; i > 0; i--)
+            {
+                yield return new WaitForSeconds(1);
+                RemainingRespawnTime--;
+            }
 
             _playerStats.ResetHealth();
             RPC_EnableController();
-            _networkController.Teleport(SpawnLocationManager.Instance.GetRandomSpawnLocation());
+            _resetPosition = true;
+            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
+        private void RPC_PlayerKilled()
+        {
+            _playerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
+            UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
+            _cameraController.CameraLock = true;
+            _cameraController.CameraEnabled = false;
+        }
+
+        private void RespawnTimeChanged()
+        {
+            if (!HasInputAuthority) return;
+
+            UiManager.Instance.UpdateDeathTimer(RemainingRespawnTime);
+
+            if (RemainingRespawnTime > 0) return;
+
+            UiManager.Instance.HideDeathTimer();
+            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
+            if (GameManager.Instance.RemainingGameEndTime > 0) return;
+            _cameraController.CameraLock = false;
+            _cameraController.CameraEnabled = true;
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_DisableController()
+        {
+            _networkController.enabled = false;
+            _characterController.enabled = false;
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_EnableController()
+        {
+            _networkController.enabled = true;
             _characterController.enabled = true;
         }
 
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public void RPC_DisableController() => _characterController.enabled = false;
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_GameEnd() => GameEnd();
 
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public void RPC_EnableController() => _characterController.enabled = true;
-
-        public void GameEnd(TeamType winnerTeam, Color winnerColor)
+        public void GameEnd()
         {
             UiManager.Instance.HideDeathTimer();
-            UiManager.Instance.ShowEndGameScreen(winnerTeam, winnerColor);
-            if (_respawnCoroutine != null)
-            {
-                StopCoroutine(_respawnCoroutine);
-                _respawnCoroutine = null;
-            }
-            StartCoroutine(GameEndCountdown());
-        }
-
-        public void GameEnd(string winnerName, Color winnerColor)
-        {
-            UiManager.Instance.HideDeathTimer();
-            UiManager.Instance.ShowEndGameScreen(winnerName, winnerColor);
-            if (_respawnCoroutine != null)
-            {
-                StopCoroutine(_respawnCoroutine);
-                _respawnCoroutine = null;
-            }
-            StartCoroutine(GameEndCountdown());
-        }
-
-        private IEnumerator GameEndCountdown()
-        {
+            UiManager.Instance.ShowEndGameScreen();
+            _cameraController.CameraLock = true;
             _cameraController.CameraEnabled = false;
-            _networkController.enabled = false;
+        }
+        
+        public void StopRespawnCoroutine()
+        {
+            if (_respawnCoroutine == null) return;
+            
+            StopCoroutine(_respawnCoroutine);
+            _respawnCoroutine = null;
+            RemainingRespawnTime = 0;
+        }
 
-            yield return new WaitForSeconds(7);
-
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_GameStart()
+        {
             UiManager.Instance.HideEndGameScreen();
-            PlayerManager.Instance.ResetGameStats();
-        }        
+            _cameraController.CameraLock = false;
+            _cameraController.CameraEnabled = true;
+        }
+
+        public void SetGameStartPosition()
+        {
+            _resetPosition = true;
+            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
+        }
     }
 }
