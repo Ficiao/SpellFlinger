@@ -64,6 +64,8 @@ namespace SpellFlinger.PlayScene
             if(Health != default) HealthChanged();
             if(Kills != default) KillsChanged();
             if(Deaths != default) DeathsChanged();
+
+            if(!HasInputAuthority && FusionConnection.GameModeType == GameModeType.DM) PlayerManager.Instance.SetPlayerColor(this);
         }
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]

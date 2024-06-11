@@ -96,7 +96,7 @@ namespace SpellFlinger.PlayScene
         public void ShowSoloScore()
         {
             _soloScore.SetActive(true); 
-            _soloScoreText.text = "Kill: 0";
+            _soloScoreText.text = "Kills: 0";
         }
 
         public void UpdateTeamScore()
@@ -115,7 +115,6 @@ namespace SpellFlinger.PlayScene
 
         public void ShowEndGameScreen()
         {
-            //UpdateEndGameText();
             _gameEndScreen.SetActive(true);
             _aimCursor.SetActive(false);
         }

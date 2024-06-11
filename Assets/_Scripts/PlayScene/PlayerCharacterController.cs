@@ -21,7 +21,8 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Transform _modelLeftHand = null;
         [SerializeField] private Transform _modelRightHand = null;
         [SerializeField] private Animator _playerAnimator = null;
-        [SerializeField] private float _fireRate = 0;
+        [SerializeField] private float _doubleJumpDelay = 0f;
+        private float _fireRate = 0;
         private PlayerAnimationController _playerAnimationController = null;
         private CameraController _cameraController = null;
         private Projectile _projectilePrefab = null;
@@ -29,6 +30,9 @@ namespace SpellFlinger.PlayScene
         private float _fireCooldown = 0;
         private IEnumerator _respawnCoroutine = null;
         private bool _resetPosition = false;
+        private float _jumpTime = 0f;
+        private bool _doubleJumpAvailable = false;
+        private int _updatesSinceLastGrounded = 0;
 
         [Networked, OnChangedRender(nameof(RespawnTimeChanged))] public int RemainingRespawnTime { get; private set; }
         public PlayerStats PlayerStats => _playerStats;
@@ -95,8 +99,11 @@ namespace SpellFlinger.PlayScene
             _fireCooldown = Time.time + _fireRate;
             _playerAnimationController.PlayShootAnimation(_playerAnimator);
 
-            Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
-            projectile.Throw(shootDirection, _playerStats);
+            if (HasStateAuthority)
+            {
+                Projectile projectile = Runner.Spawn(_projectilePrefab, _shootOrigin.position, inputAuthority: Runner.LocalPlayer);
+                projectile.Throw(shootDirection, _playerStats);
+            }
         }
 
         public override void FixedUpdateNetwork()
@@ -112,10 +119,35 @@ namespace SpellFlinger.PlayScene
 
             if (GetInput(out NetworkInputData data))
             {
-                if (HasStateAuthority && data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot(data.ShootTarget);
+                if (data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot(data.ShootTarget);
 
                 _playerAnimationController.AnimationUpdate(_networkController.Grounded, data.Direction.x , data.Direction.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
-                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.Buttons.IsSet(NetworkInputData.JUMP), data.YRotation);             
+
+                bool isGrounded = _characterController.isGrounded;
+                if (isGrounded) _updatesSinceLastGrounded = 0;
+                else if (_updatesSinceLastGrounded < 3)
+                {
+                    isGrounded = true;
+                    _updatesSinceLastGrounded++;
+                }
+
+                bool jump = data.Buttons.IsSet(NetworkInputData.JUMP);
+
+                if (isGrounded && jump)
+                {
+                    _networkController.Jump();
+                    _jumpTime = Time.time;
+                }
+
+                if (isGrounded) _doubleJumpAvailable = true;
+                else if (jump && _doubleJumpAvailable && Time.time - _jumpTime >= _doubleJumpDelay)
+                {
+                    _doubleJumpAvailable = false;
+                    _networkController.Jump(ignoreGrounded: true, doubleJump: true);
+                    Debug.Log("Double jumped");
+                }
+
+                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.YRotation, isGrounded);             
             }
         }
 
@@ -207,6 +239,7 @@ namespace SpellFlinger.PlayScene
         public void RPC_GameStart()
         {
             UiManager.Instance.HideEndGameScreen();
+            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
             _cameraController.CameraLock = false;
             _cameraController.CameraEnabled = true;
         }

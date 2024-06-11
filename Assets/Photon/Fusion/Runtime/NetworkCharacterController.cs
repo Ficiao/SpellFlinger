@@ -44,16 +44,11 @@ namespace Fusion {
     public float jumpImpulse   = 8.0f;
     public float rotationSpeed = 15.0f;
     public float moveSpeed = 0f;
-    public float gravityBurst = 0f;
     public float slowAmount = 0f;
     public float doubleJumpBoost = 0f;
-    public float doubleJumpDelay = 0f;
     public float slopeRaycastDistance = 0f;
 
     private float _squareOfTwo = Mathf.Sqrt(2);
-    private float _jumpTime = 0f;
-    private bool _doubleJumpAvailable = false;
-    private int _updatesSinceLastGrounded = 0;
 
     Tick                _initial;
     CharacterController _controller;
@@ -75,29 +70,22 @@ namespace Fusion {
     }
 
 
-    public float Jump(bool ignoreGrounded = false, bool doubleJump = false) {
+    public void Jump(bool ignoreGrounded = false, bool doubleJump = false) {
       if (Data.Grounded || ignoreGrounded) {
         var newVel = Data.Velocity;
         newVel.y = doubleJump ? doubleJumpBoost : jumpImpulse;
         Data.Velocity =  newVel;
-        return newVel.y;
       }
-
-      return Data.Velocity.y;
     }
 
-    public void Move(Vector2 direction, bool isSlowed, bool jump, float rotation)
+    public void Move(Vector2 direction, bool isSlowed, float rotation, bool isGrounded)
     {
         var deltaTime = Runner.DeltaTime;
-        var previousPos = transform.position;
         var moveVelocity = Data.Velocity;
 
-        bool isGrounded = _controller.isGrounded;
-        if (isGrounded) _updatesSinceLastGrounded = 0;
-        else if (_updatesSinceLastGrounded < 3)
+        if (Data.Grounded && moveVelocity.y < 0)
         {
-            isGrounded = true;
-            _updatesSinceLastGrounded++;
+            moveVelocity.y = 0f;
         }
 
         Vector3 _moveDirection = transform.right * direction.x + transform.forward * direction.y;
@@ -105,30 +93,7 @@ namespace Fusion {
         if (isSlowed) _moveDirection *= slowAmount;
         if (direction.x != 0 && direction.y != 0) _moveDirection /= _squareOfTwo;
 
-        float deltaGravity = gravity * deltaTime;
-        moveVelocity.y += deltaGravity;
-        if (Math.Abs(moveVelocity.y) < deltaGravity)
-        {
-            moveVelocity.y += gravity * gravityBurst;
-        }
-
-        if (_controller.isGrounded)
-        {
-            moveVelocity.y = 0f;
-            if (jump)
-            {
-                moveVelocity.y = Jump();
-                _jumpTime = Time.time;   
-            }
-        }
-
-        if (isGrounded) _doubleJumpAvailable = true;
-        else if (jump && _doubleJumpAvailable && Time.time - _jumpTime >= doubleJumpDelay)
-        {
-            _doubleJumpAvailable = false;
-            moveVelocity.y = Jump(ignoreGrounded: true, doubleJump: true);
-            Debug.Log("Double jumped");
-        }
+        moveVelocity.y += gravity * deltaTime;
 
         _moveDirection = AdjustVelocityToSlope(_moveDirection);
         _moveDirection.y += moveVelocity.y;
@@ -136,8 +101,7 @@ namespace Fusion {
 
         transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + rotation, 0);
 
-        moveVelocity = (transform.position - previousPos) * Runner.TickRate;
-        //moveVelocity.y = _moveDirection.y;
+        moveVelocity = _moveDirection;
         Data.Velocity = moveVelocity;
         Data.Grounded = isGrounded;
     }
@@ -157,37 +121,6 @@ namespace Fusion {
 
         return velocity;
     }
-
-    //public void Move(Vector3 direction, float slopeRaycastDistance, bool isGroundedFrameNormalized) {
-    //  var deltaTime    = Runner.DeltaTime;
-    //  var previousPos  = transform.position;
-    //  var moveVelocity = Data.Velocity;
-
-    //  if (Data.Grounded && moveVelocity.y < 0) {
-    //    moveVelocity.y = 0f;
-    //  }
-
-    //  moveVelocity.y += gravity * Runner.DeltaTime;
-
-    //  var horizontalVel = default(Vector3);
-    //  horizontalVel.x = moveVelocity.x;
-    //  horizontalVel.z = moveVelocity.z;
-
-    //  if (direction == default) {
-    //    horizontalVel = Vector3.Lerp(horizontalVel, default, braking * deltaTime);
-    //  } else {
-    //    horizontalVel      = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed);
-    //    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), rotationSpeed * Runner.DeltaTime);
-    //  }
-
-    //  moveVelocity.x = horizontalVel.x;
-    //  moveVelocity.z = horizontalVel.z;
-
-    //  _controller.Move(AdjustVelocityToSlope(moveVelocity, slopeRaycastDistance) * deltaTime);
-
-    //  Data.Velocity = (transform.position - previousPos) * Runner.TickRate;
-    //  Data.Grounded = _controller.isGrounded;
-    //}
 
     public override void Spawned() {
       _initial = default;
