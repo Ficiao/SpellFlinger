@@ -137,7 +137,7 @@ namespace Fusion {
         transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + rotation, 0);
 
         moveVelocity = (transform.position - previousPos) * Runner.TickRate;
-        moveVelocity.y = _moveDirection.y;
+        //moveVelocity.y = _moveDirection.y;
         Data.Velocity = moveVelocity;
         Data.Grounded = isGrounded;
     }
