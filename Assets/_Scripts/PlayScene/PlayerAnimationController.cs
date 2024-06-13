@@ -8,7 +8,7 @@ namespace SpellFlinger.PlayScene
         private float _currentAngle = 0;
         private float _deltaAngle = 0.3f;
         private float _lerpCutoff = 0.01f;
-        private bool _isLeftAttack = false;
+        private int _attackOrder = 0;
         private int _animationStateParameterId = 0;
 
         public void Init(ref PlayerAnimationState animationState, Animator animator)
@@ -35,18 +35,10 @@ namespace SpellFlinger.PlayScene
         public void PlayShootAnimation(Animator animator)
         {
             animator.SetLayerWeight(1, 1);
-            if (_isLeftAttack)
-            {
-                animator.SetBool("AttackLeft", true);
-                animator.SetBool("AttackRight", false);
-                _isLeftAttack = false;
-            }
-            else
-            {
-                animator.SetBool("AttackLeft", false);
-                animator.SetBool("AttackRight", true);
-                _isLeftAttack = true;
-            }
+
+            animator.SetTrigger($"Attack{_attackOrder + 1}");
+            _attackOrder++;
+            _attackOrder = _attackOrder % 3;
         }
 
         public void AnimationUpdate(bool isGrounded, float leftRightDirection, float forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
