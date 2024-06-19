@@ -107,11 +107,9 @@ namespace SpellSlinger.Networking
 
                 NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, inputAuthority: player);
                 _spawnedCharacters.Add(player, playerObject);
-                PlayerCharacterController characterController = playerObject.GetComponent<PlayerCharacterController>();
 
-                PlayerStats stats = characterController.PlayerStats;
+                PlayerStats stats = playerObject.GetComponent<PlayerCharacterController>().PlayerStats;
                 if (_gameModeType == GameModeType.TDM) stats.Team = PlayerManager.Instance.GetTeamWithLessPlayers();
-                else if(_gameModeType == GameModeType.DM) stats.Team = TeamType.None;
             }
         }
 

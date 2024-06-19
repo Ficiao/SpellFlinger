@@ -29,6 +29,8 @@ namespace SpellFlinger.PlayScene
 
             transform.position += (Direction * Runner.DeltaTime);
 
+            if (!HasStateAuthority) return;
+
             Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);
 
             foreach (Collider collider in hitColliders)
