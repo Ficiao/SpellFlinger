@@ -41,7 +41,7 @@ namespace SpellSlinger.Networking
         public void ConnectToLobby(String playerName = null)
         {
             if(!playerName.IsNullOrEmpty()) _playerName = playerName;
-            _runner.JoinSessionLobby(SessionLobby.Shared);
+            _runner.JoinSessionLobby(SessionLobby.ClientServer);
         }
 
         public async void CreateSession(string sessionName, GameModeType gameMode, LevelType level)
