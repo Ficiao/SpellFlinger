@@ -117,23 +117,23 @@ namespace SpellFlinger.PlayScene
         {
             if (Health - damage <= 0)
             {
-                if(Health > 0)
-                {
-                    Deaths++;
-                    attacker.Kills++;
-                    _playerCharacterController.PlayerKilled();
+                if (Health == 0) return;
 
-                    if (FusionConnection.GameModeType == GameModeType.DM && attacker.Kills >= GameManager.Instance.SoloKillsForWin)
-                    {
-                        GameManager.Instance.GameEnd(attacker.PlayerName.Value);
-                    }
-                    else if (FusionConnection.GameModeType == GameModeType.TDM)
-                    {
-                        GameManager.Instance.AddTeamKill(attacker.Team);
-                        if(GameManager.Instance.GetTeamKills(attacker.Team) >= GameManager.Instance.TeamKillsForWin) 
-                        GameManager.Instance.GameEnd(attacker.Team);
-                    }
+                Deaths++;
+                attacker.Kills++;
+                _playerCharacterController.PlayerKilled();
+
+                if (FusionConnection.GameModeType == GameModeType.DM && attacker.Kills >= GameManager.Instance.SoloKillsForWin)
+                {
+                    GameManager.Instance.GameEnd(attacker.PlayerName.Value);
                 }
+                else if (FusionConnection.GameModeType == GameModeType.TDM)
+                {
+                    GameManager.Instance.AddTeamKill(attacker.Team);
+                    if (GameManager.Instance.GetTeamKills(attacker.Team) >= GameManager.Instance.TeamKillsForWin)
+                        GameManager.Instance.GameEnd(attacker.Team);
+                }
+
                 Health = 0;
             }
             else Health -= damage;

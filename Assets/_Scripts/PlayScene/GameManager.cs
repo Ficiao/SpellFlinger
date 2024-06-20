@@ -25,7 +25,11 @@ namespace SpellFlinger.PlayScene
         public override void Spawned()
         {
             _instance = this;
-            if (RemainingGameEndTime > 0) FusionConnection.Instance.LocalCharacterController.GameEnd();
+            if (RemainingGameEndTime > 0)
+            {
+                UiManager.Instance.UpdateEndGameText();
+                FusionConnection.Instance.LocalCharacterController.GameEnd();
+            }
             UiManager.Instance.UpdateTeamScore();
         }
 
