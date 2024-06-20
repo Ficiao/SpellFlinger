@@ -3,57 +3,52 @@ using SpellFlinger.Enum;
 
 namespace SpellFlinger.PlayScene
 {
-    public static class PlayerAnimationController
+    public  class PlayerAnimationController
     {
-        private static float _currentAngle = 0;
-        private static float _deltaAngle = 0.3f;
-        private static float _lerpCutoff = 0.01f;
-        private static bool _isLeftAttack = false;
-        private static int _animationStateParameterId = 0;
+        private float _currentAngle = 0;
+        private float _deltaAngle = 0.3f;
+        private float _lerpCutoff = 0.01f;
+        private int _attackOrder = 0;
+        private int _animationStateParameterId = 0;
 
-        public static void Init(ref PlayerAnimationState animationState, Animator animator)
+        public void Init(ref PlayerAnimationState animationState, Animator animator)
         {
             _animationStateParameterId = Animator.StringToHash("AnimationState");
             animationState = PlayerAnimationState.Idle;
             animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void SetDeadState(ref PlayerAnimationState animationState, Animator animator)
+        public void SetDeadState(ref PlayerAnimationState animationState, Animator animator)
         {
             animationState = PlayerAnimationState.Dead;
             animator.SetBool("DeadState", true);
             animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void SetAliveState(ref PlayerAnimationState animationState, Animator animator)
+        public void SetAliveState(ref PlayerAnimationState animationState, Animator animator)
         {
             animationState = PlayerAnimationState.Idle;
             animator.SetBool("DeadState", false);
             animator.SetInteger(_animationStateParameterId, (int)animationState);
         }
 
-        public static void PlayShootAnimation(Animator animator)
+        public void PlayShootAnimation(Animator animator)
         {
             animator.SetLayerWeight(1, 1);
-            if (_isLeftAttack)
-            {
-                animator.SetBool("AttackLeft", true);
-                animator.SetBool("AttackRight", false);
-                _isLeftAttack = false;
-            }
-            else
-            {
-                animator.SetBool("AttackLeft", false);
-                animator.SetBool("AttackRight", true);
-                _isLeftAttack = true;
-            }
+
+            animator.SetTrigger($"Attack{_attackOrder + 1}");
+            _attackOrder++;
+            _attackOrder = _attackOrder % 3;
         }
 
-        public static void AnimationUpdate(bool isGrounded, int leftRightDirection, int forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
+        public void AnimationUpdate(bool isGrounded, float leftRightDirection, float forwardDirection, ref PlayerAnimationState animationState, Animator animator, Transform modelTransform, Transform referenceTransform)
         {
             modelTransform.rotation = referenceTransform.rotation;
             float rotation;
             PlayerAnimationState newPlayerAnimationState;
+
+            leftRightDirection = leftRightDirection > 0 ? 1 : leftRightDirection == 0 ? 0 : -1;
+            forwardDirection = forwardDirection > 0 ? 1 : forwardDirection == 0 ? 0 : -1;
 
             switch ((leftRightDirection, forwardDirection))
             {
@@ -107,7 +102,7 @@ namespace SpellFlinger.PlayScene
             ApplyAnimation(newPlayerAnimationState, ref animationState, _currentAngle, animator, modelTransform);
         }
 
-        private static void ApplyAnimation(PlayerAnimationState playerAnimation, ref PlayerAnimationState currentAnimation, float rotation, Animator animator, Transform modelTransform)
+        private void ApplyAnimation(PlayerAnimationState playerAnimation, ref PlayerAnimationState currentAnimation, float rotation, Animator animator, Transform modelTransform)
         {
             if(currentAnimation != playerAnimation)
             {

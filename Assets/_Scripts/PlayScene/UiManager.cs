@@ -30,11 +30,6 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private Slider _leftRightSensitivity = null;
         [SerializeField] private GameObject _gameEndScreen = null;
         [SerializeField] private TextMeshProUGUI _winnerText = null;
-        private int _teamAKills = 0;
-        private int _teamBKills = 0;
-        private Color _friendlyColor;
-        private Color _enemyColor;
-        private TeamType _friendlyTeamType;
 
         private void Start()
         {
@@ -50,8 +45,6 @@ namespace SpellFlinger.PlayScene
                 CameraController.Instance.CameraEnabled = false;
                 FusionConnection.Instance.LeaveSession();
             });
-
-            PlayerManager.Instance.OnPlayerTeamTypeSet += ShowTeamScore;
 
             _upDownSensitivity.value = SensitivitySettingsScriptable.Instance.UpDownMultiplier;
             _leftRightSensitivity.value = SensitivitySettingsScriptable.Instance.LeftRightMultiplier;
@@ -84,11 +77,9 @@ namespace SpellFlinger.PlayScene
             _aimCursor.SetActive(true);
         }
 
-        private void ShowTeamScore()
+        public void ShowTeamScore()
         {
             _teamScore.SetActive(true);
-            _teamAScoreText.text = "Team A: " + _teamAKills;
-            _teamBScoreText.text = "Team B: " + _teamBKills;
 
             if (PlayerManager.Instance.FriendlyTeam == TeamType.TeamA)
             {
@@ -105,51 +96,16 @@ namespace SpellFlinger.PlayScene
         public void ShowSoloScore()
         {
             _soloScore.SetActive(true); 
-            _soloScoreText.text = "Kill: 0";
+            _soloScoreText.text = "Kills: 0";
         }
 
-        public int IncreaseTeamScore(TeamType team)
+        public void UpdateTeamScore()
         {
-            if (team == TeamType.TeamA)
-            {
-                _teamAKills++;
-                _teamAScoreText.text = "Team A: " + _teamAKills.ToString();
-                return _teamAKills;
-            }
-            else
-            {
-                _teamBKills++;
-                _teamBScoreText.text = "Team B: " + _teamBKills.ToString();
-                return _teamBKills;
-            }
-        }
-
-        public int AddTeamScore(TeamType team, int amount)
-        {
-            if (team == TeamType.TeamA)
-            {
-                _teamAKills += amount;
-                _teamAScoreText.text = "Team A: " + _teamAKills.ToString();
-                return _teamAKills;
-            }
-            else
-            {
-                _teamBKills += amount;
-                _teamBScoreText.text = "Team B: " + _teamBKills.ToString();
-                return _teamBKills;
-            }
+            _teamAScoreText.text = "Team A: " + GameManager.Instance.TeamAKills;
+            _teamBScoreText.text = "Team B: " + GameManager.Instance.TeamBKills;
         }
 
         public void UpdateSoloScore(int kills) => _soloScoreText.text = "Kills: " + kills.ToString();
-
-        public void ResetScore()
-        {
-            _teamAKills = 0;
-            _teamAScoreText.text = "Team A: 0";
-            _teamBKills = 0;
-            _teamBScoreText.text = "Team B: 0";
-            _soloScoreText.text = "Kills: 0";
-        }
 
         public void UpdateHealthBar(int health, float healthPercentage)
         {
@@ -157,22 +113,37 @@ namespace SpellFlinger.PlayScene
             _healthSlider.value = healthPercentage;
         }
 
-        public void ShowEndGameScreen(TeamType winnerTeam, Color textColor)
+        public void ShowEndGameScreen()
         {
-            if (winnerTeam == TeamType.TeamA) _winnerText.text = "Team A wins!!!";
-            else _winnerText.text = "Team B wins!!!";
-            _winnerText.color = textColor;
             _gameEndScreen.SetActive(true);
             _aimCursor.SetActive(false);
         }
 
-        public void ShowEndGameScreen(string playerName, Color textColor)
+        public void UpdateEndGameText()
         {
-            if (playerName == FusionConnection.Instance.PlayerName) _winnerText.text = "You win!!!";
-            else _winnerText.text = $"{playerName} wins!!!";
-            _winnerText.color = textColor;
-            _gameEndScreen.SetActive(true);
-            _aimCursor.SetActive(false);
+            Color endGameTextColor = default;
+            if (FusionConnection.GameModeType == GameModeType.TDM)
+            {
+                if (GameManager.Instance.WinnerTeam == TeamType.TeamA) _winnerText.text = "Team A wins!!!";
+                else _winnerText.text = "Team B wins!!!";
+                bool isFriendlyTeamWinner = GameManager.Instance.WinnerTeam == FusionConnection.Instance.LocalCharacterController.PlayerStats.Team;
+                endGameTextColor = isFriendlyTeamWinner ? PlayerManager.Instance.FriendlyColor : PlayerManager.Instance.EnemyColor;
+            }
+            else if (FusionConnection.GameModeType == GameModeType.DM)
+            {
+                if (GameManager.Instance.WinnerPlayerName == FusionConnection.Instance.PlayerName)
+                {
+                    _winnerText.text = "You win!!!";
+                    endGameTextColor = PlayerManager.Instance.FriendlyColor;
+                }
+                else
+                {
+                    _winnerText.text = $"{GameManager.Instance.WinnerPlayerName} wins!!!";
+                    endGameTextColor = PlayerManager.Instance.EnemyColor;
+                }
+            }
+
+            _winnerText.color = endGameTextColor;
         }
 
         public void HideEndGameScreen()

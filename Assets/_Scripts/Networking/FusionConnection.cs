@@ -8,7 +8,6 @@ using SpellFlinger.Enum;
 using SpellFlinger.LoginScene;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
-using SpellFlinger.Scriptables;
 using WebSocketSharp;
 
 namespace SpellSlinger.Networking
@@ -17,13 +16,18 @@ namespace SpellSlinger.Networking
     {
         private static string _playerName = null;
         [SerializeField] private PlayerCharacterController _playerPrefab = null;
+        [SerializeField] private GameManager _gameManagerPrefab = null;
         [SerializeField] private NetworkRunner _networkRunnerPrefab = null;
         [SerializeField] private int _playerCount = 10;
-        [SerializeField] private NetworkRunner _runner = null;
-        [SerializeField] private NetworkSceneManagerDefault _networkSceneManager= null;
+        private NetworkRunner _runner = null;
+        private NetworkSceneManagerDefault _networkSceneManager= null;
+        private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new Dictionary<PlayerRef, NetworkObject>();
         private List<SessionInfo> _sessions = new List<SessionInfo>();
-        private GameModeType _gameModeType;
+        private static GameModeType _gameModeType;
+
+        public PlayerCharacterController LocalCharacterController { get; set; }
         public List<SessionInfo> Sessions => _sessions;
+        public static GameModeType GameModeType => _gameModeType;
 
         public string PlayerName => _playerName;
 
@@ -31,15 +35,16 @@ namespace SpellSlinger.Networking
         {
             base.Awake();
             _networkSceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
+            _runner = gameObject.AddComponent<NetworkRunner>();
         }
 
         public void ConnectToLobby(String playerName = null)
         {
             if(!playerName.IsNullOrEmpty()) _playerName = playerName;
-            _runner.JoinSessionLobby(SessionLobby.Shared);
+            _runner.JoinSessionLobby(SessionLobby.ClientServer);
         }
 
-        public async void JoinSession(string sessionName, GameModeType gameMode, LevelType level)
+        public async void CreateSession(string sessionName, GameModeType gameMode, LevelType level)
         {
 
             _runner.ProvideInput = false;
@@ -52,12 +57,41 @@ namespace SpellSlinger.Networking
              * SessionPropeties, te mu proslijedite sva potrebna svojstva. (tip: za pretvaranje custom svojstva u pogodan oblik može se koristiti
              * SessionProperty.Convert() metoda.
              */
+
+            _runner.ProvideInput = true;
+
+            Dictionary<string, SessionProperty> properties = new Dictionary<string, SessionProperty>();
+            properties.Add("level", SessionProperty.Convert((int)level));
+            properties.Add("gameMode", SessionProperty.Convert((int)gameMode));
+            _gameModeType = gameMode;
+
+            await _runner.StartGame(new StartGameArgs()
+            {
+                GameMode = GameMode.Host,
+                SessionName = sessionName,
+                Scene = SceneRef.FromIndex((int)level),
+                PlayerCount = _playerCount,
+                SceneManager = _networkSceneManager,
+                SessionProperties = properties,
+            });
+        }
+
+        public async void JoinSession(string sessionName, GameModeType gameMode)
+        {
+            _runner.ProvideInput = true;
+            _gameModeType = gameMode;
+
+            await _runner.StartGame(new StartGameArgs()
+            {
+                GameMode = GameMode.Client,
+                SessionName = sessionName,
+            });
         }
 
         public void LeaveSession()
         {
             /*
-             * U ovoj metodi je potrebno pozvati Shutdown metodu instance NetworkRunner klase, te učitati početni ekran.
+             * U ovoj metodi je potrebno pozvati Shutdown metodu instance NetworkRunner klase, učitati početni ekran i otključati cursor korisnika
              */
         }
 
@@ -71,19 +105,30 @@ namespace SpellSlinger.Networking
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log("On Player Joined");
-            if (player == runner.LocalPlayer)
+            if (runner.IsServer)
             {
-                NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject);
-                PlayerCharacterController characterController = playerObject.GetComponent<PlayerCharacterController>();
-                characterController.enabled = true;
-                runner.SetPlayerObject(runner.LocalPlayer, playerObject);
-                PlayerStats stats = characterController.PlayerStats;
-                if (_gameModeType == GameModeType.TDM) stats.SetPlayerData(PlayerManager.Instance.GetTeamWithLessPlayers(), WeaponDataScriptable.SelectedWeaponType, _playerName);
-                else
+                if (player == runner.LocalPlayer)
                 {
-                    stats.SetPlayerData(TeamType.None, WeaponDataScriptable.SelectedWeaponType, _playerName);
-                    UiManager.Instance.ShowSoloScore();
+                    HealingPointSpawner.Instance.SpawnHealingPoints(runner);
+                    runner.Spawn(_gameManagerPrefab);
                 }
+
+                NetworkObject playerObject = runner.Spawn(_playerPrefab.gameObject, inputAuthority: player);
+                _spawnedCharacters.Add(player, playerObject);
+
+                PlayerStats stats = playerObject.GetComponent<PlayerCharacterController>().PlayerStats;
+                if (_gameModeType == GameModeType.TDM) stats.Team = PlayerManager.Instance.GetTeamWithLessPlayers();
+            }
+        }
+
+
+        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
+        {
+            Debug.Log("On Player Left");
+            if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
+            {
+                runner.Despawn(networkObject);
+                _spawnedCharacters.Remove(player);
             }
         }
 
@@ -92,6 +137,11 @@ namespace SpellSlinger.Networking
             base.OnApplicationQuit();
 
             if (_runner != null && !_runner.IsDestroyed()) _runner.Shutdown();
+        }
+
+        public void OnInput(NetworkRunner runner, NetworkInput input)
+        {
+            Debug.Log("On Input");
         }
 
         public void OnConnectedToServer(NetworkRunner runner)
@@ -124,11 +174,6 @@ namespace SpellSlinger.Networking
             Debug.Log("On Host Migration");
         }
 
-        public void OnInput(NetworkRunner runner, NetworkInput input)
-        {
-            Debug.Log("On Input");
-        }
-
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
         {
             Debug.Log("On Input Missing");
@@ -142,11 +187,6 @@ namespace SpellSlinger.Networking
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
         {
             Debug.Log("OnO bject Exit AOI");
-        }
-
-        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
-        {
-            Debug.Log("On Player Left");
         }
 
         public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)
@@ -171,7 +211,8 @@ namespace SpellSlinger.Networking
 
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
-            Debug.Log("On Shut down, reasone: " + shutdownReason.ToString());
+            Debug.Log("On Shut down, reason: " + shutdownReason.ToString());
+            LeaveSession();
         }
 
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)

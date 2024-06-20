@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcc83f1ca059458428e773fe3e2e8b09, type: 3}
   m_Name: Sensitivity Settings Scriptable
   m_EditorClassIdentifier: 
-  _upDownSensitivity: 800
-  _leftRightSensitivity: 65
+  _upDownSensitivity: 6
+  _leftRightSensitivity: 2.75

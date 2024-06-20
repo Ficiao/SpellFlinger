@@ -1,21 +1,21 @@
-namespace Fusion {
-  using System;
-  using System.Collections.Generic;
-  using UnityEngine;
-  using UnityEngine.EventSystems;
-  using StatsInternal;
-  using UnityEngine.Serialization;
+namespace Fusion
+{
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+    using StatsInternal;
 
 #if UNITY_EDITOR
-  using UnityEditor;
+    using UnityEditor;
 #endif
 
-  /// <summary>
-  /// Creates and controls a Canvas with one or multiple telemetry graphs. Can be created as a scene object or prefab,
-  /// or be created at runtime using the <see cref="Create"/> methods. If created as the child of a <see cref="NetworkObject"/>
-  /// then <see cref="EnableObjectStats"/> will automatically be set to true.
-  /// </summary>
-  [ScriptHelp(BackColor = ScriptHeaderBackColor.Olive)]
+    /// <summary>
+    /// Creates and controls a Canvas with one or multiple telemetry graphs. Can be created as a scene object or prefab,
+    /// or be created at runtime using the <see cref="Create"/> methods. If created as the child of a <see cref="NetworkObject"/>
+    /// then <see cref="EnableObjectStats"/> will automatically be set to true.
+    /// </summary>
+    [ScriptHelp(BackColor = ScriptHeaderBackColor.Olive)]
   [ExecuteAlways]
   public partial class FusionStats : Fusion.Behaviour {
 

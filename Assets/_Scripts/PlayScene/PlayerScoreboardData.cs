@@ -21,14 +21,8 @@ namespace SpellFlinger.PlayScene
         public void SetTeamType(TeamType teamType)
         {
             _teamType = teamType;
-            if (PlayerManager.Instance.FriendlyTeam != TeamType.None)
-            {
-                UpdateTeamColors();
-            }
-            else
-            {
-                PlayerManager.Instance.OnPlayerTeamTypeSet += UpdateTeamColors;
-            }
+            if (PlayerManager.Instance.FriendlyTeam != TeamType.None) UpdateTeamColors();
+            else PlayerManager.Instance.OnPlayerTeamTypeSet += UpdateTeamColors;
         }
 
         public void UpdateScore(int kills, int deaths)

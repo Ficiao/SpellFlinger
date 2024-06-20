@@ -7,12 +7,10 @@ namespace SpellFlinger.PlayScene
     {
         [SerializeField] protected float _movementSpeed;
         [SerializeField] protected int _damage;
-        [SerializeField] protected GameObject _effectModel;
-        protected Vector3 _direction;
 
-        [Networked] public PlayerStats _ownerPlayerStats {get;set;}
-        [Networked] public PlayerRef _ownerPlayerRef {get;set;}
+        [Networked] public Vector3 Direction { get; set; }
+        [Networked] public PlayerStats OwnerPlayerStats {get;set;}
 
-        public abstract void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats);
+        public abstract void Throw(Vector3 direction, PlayerStats ownerPlayerStats);
     }
 }

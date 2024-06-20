@@ -140,14 +140,15 @@ namespace Fusion {
 
 #region NetworkAssetSourceResource.cs
 
-namespace Fusion {
-  using System;
-  using System.Runtime.ExceptionServices;
-  using UnityEngine;
-  using Object = UnityEngine.Object;
-  using UnityResources = UnityEngine.Resources;
+namespace Fusion
+{
+    using System;
+    using System.Runtime.ExceptionServices;
+    using UnityEngine;
+    using Object = UnityEngine.Object;
+    using UnityResources = UnityEngine.Resources;
 
-  [Serializable]
+    [Serializable]
   public partial class NetworkAssetSourceResource<T> where T : UnityEngine.Object {
     [UnityResourcePath(typeof(Object))]
     public string ResourcePath;
@@ -286,16 +287,13 @@ namespace Fusion {
 
 #region NetworkAssetSourceStatic.cs
 
-namespace Fusion {
-  using System;
+namespace Fusion
+{
+    using System;
 #if UNITY_EDITOR
-  using UnityEditor;
 #endif
-  using UnityEngine;
-  using UnityEngine.Serialization;
-  using Object = UnityEngine.Object;
 
-  [Serializable]
+    [Serializable]
   public partial class NetworkAssetSourceStatic<T> where T : UnityEngine.Object {
     public T Prefab;
     
@@ -343,16 +341,14 @@ namespace Fusion {
 
 #region NetworkAssetSourceStaticLazy.cs
 
-namespace Fusion {
-  using System;
+namespace Fusion
+{
+    using System;
 #if UNITY_EDITOR
-  using UnityEditor;
 #endif
-  using UnityEngine;
-  using UnityEngine.Serialization;
-  using Object = UnityEngine.Object;
+    using UnityEngine;
 
-  [Serializable]
+    [Serializable]
   public partial class NetworkAssetSourceStaticLazy<T> where T : UnityEngine.Object {
     public LazyLoadReference<T> Prefab;
     
@@ -414,13 +410,13 @@ namespace Fusion {
 #region Assets/Photon/Fusion/Runtime/FusionCoroutine.cs
 
 ﻿
-namespace Fusion {
-  using UnityEngine;
-  using System;
-  using System.Collections;
-  using System.Runtime.ExceptionServices;
+namespace Fusion
+{
+    using System;
+    using System.Collections;
+    using System.Runtime.ExceptionServices;
 
-  public sealed class FusionCoroutine : ICoroutine, IDisposable  {
+    public sealed class FusionCoroutine : ICoroutine, IDisposable  {
     private readonly IEnumerator             _inner;
     private          Action<IAsyncOperation> _completed;
     private          float                   _progress;
@@ -482,7 +478,8 @@ namespace Fusion {
 
 #region Assets/Photon/Fusion/Runtime/FusionProfiler.cs
 
-namespace Fusion {
+namespace Fusion
+{
 #if FUSION_PROFILER_INTEGRATION
   using Unity.Profiling;
   using UnityEngine;
@@ -548,10 +545,11 @@ namespace Fusion {
 
 #region Assets/Photon/Fusion/Runtime/FusionRuntimeCheck.cs
 
-namespace Fusion {
-  using UnityEngine;
+namespace Fusion
+{
+    using UnityEngine;
 
-  static class FusionRuntimeCheck {
+    static class FusionRuntimeCheck {
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void RuntimeCheck() {
@@ -581,10 +579,10 @@ namespace Fusion {
 
 namespace Fusion
 {
-  using StatsInternal;
-  using UnityEditor;
+    using StatsInternal;
+    using UnityEditor;
 
-  public partial class FusionStats
+    public partial class FusionStats
   {
 
     const int   SCREEN_SCALE_W = 1080;
@@ -755,16 +753,16 @@ namespace Fusion
 
 namespace Fusion
 {
-  using System;
-  using System.Collections.Generic;
-  using StatsInternal;
-  using UnityEngine;
+    using System;
+    using System.Collections.Generic;
+    using StatsInternal;
+    using UnityEngine;
 
 #if UNITY_EDITOR
-  using UnityEditor;
+    using UnityEditor;
 #endif
-  
-  public partial class FusionStats {
+
+    public partial class FusionStats {
     
 #if UNITY_EDITOR
 
@@ -1049,12 +1047,12 @@ namespace Fusion
 
 namespace Fusion
 {
-  using System;
-  using System.Collections.Generic;
-  using StatsInternal;
-  using UnityEngine;
+    using System;
+    using System.Collections.Generic;
+    using StatsInternal;
+    using UnityEngine;
 
-  public partial class FusionStats
+    public partial class FusionStats
   {
 
     void UpdateTitle() {
@@ -1302,12 +1300,12 @@ namespace Fusion
 
 namespace Fusion
 {
-  using System.Collections.Generic;
-  using UnityEngine;
+    using System.Collections.Generic;
+    using UnityEngine;
 
 
 
-  public partial class FusionStats
+    public partial class FusionStats
     {
 
 
@@ -1350,32 +1348,31 @@ namespace Fusion
 
 namespace Fusion.StatsInternal
 {
-  using System.Collections.Generic;
-  using UnityEngine;
-  using System;
-  using System.ComponentModel;
-  using System.Reflection;
-  
-  // [Flags]
-  // public enum FusionGraphVisualization {
-  //   [Description("Auto")]
-  //   Auto,
-  //   [Description("Continuous Tick")]
-  //   ContinuousTick = 1,
-  //   [Description("Intermittent Tick")]
-  //   IntermittentTick = 2,
-  //   [Description("Intermittent Time")]
-  //   IntermittentTime = 4,
-  //   [Description("Value Histogram")]
-  //   ValueHistogram = 8,
-  //   [Description("Count Histogram")]
-  //   CountHistogram = 16,
-  // }
-  //
-  /// <summary>
-  /// Engine sources for Samples.
-  /// </summary>
-  public enum StatSourceTypes {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using System;
+    using System.Reflection;
+
+    // [Flags]
+    // public enum FusionGraphVisualization {
+    //   [Description("Auto")]
+    //   Auto,
+    //   [Description("Continuous Tick")]
+    //   ContinuousTick = 1,
+    //   [Description("Intermittent Tick")]
+    //   IntermittentTick = 2,
+    //   [Description("Intermittent Time")]
+    //   IntermittentTime = 4,
+    //   [Description("Value Histogram")]
+    //   ValueHistogram = 8,
+    //   [Description("Count Histogram")]
+    //   CountHistogram = 16,
+    // }
+    //
+    /// <summary>
+    /// Engine sources for Samples.
+    /// </summary>
+    public enum StatSourceTypes {
     Simulation,
     NetworkObject,
     NetConnection,
@@ -1486,14 +1483,14 @@ namespace Fusion.StatsInternal
 
 #region Assets/Photon/Fusion/Runtime/FusionStatsGraphBase.cs
 
-namespace Fusion {
-  using System.Reflection;
-  using UnityEngine;
-  using UI = UnityEngine.UI;
-  using StatsInternal;
-  using UnityEngine.Serialization;
+namespace Fusion
+{
+    using System.Reflection;
+    using UnityEngine;
+    using UI = UnityEngine.UI;
+    using StatsInternal;
 
-  [ScriptHelp(BackColor = ScriptHeaderBackColor.Olive)]
+    [ScriptHelp(BackColor = ScriptHeaderBackColor.Olive)]
   public abstract class FusionStatsGraphBase : Fusion.Behaviour, IFusionStatsView {
     
     protected const int PAD = FusionStatsUtilities.PAD;
@@ -1814,13 +1811,14 @@ namespace Fusion {
 
 #region Assets/Photon/Fusion/Runtime/FusionStatsUtilities.cs
 
-namespace Fusion.StatsInternal {
-  using UnityEngine;
-  using UnityEngine.Events;
-  using UI = UnityEngine.UI;
+namespace Fusion.StatsInternal
+{
+    using UnityEngine;
+    using UnityEngine.Events;
+    using UI = UnityEngine.UI;
 
-  
-  public interface IFusionStatsView {
+
+    public interface IFusionStatsView {
     void Initialize();
     void CalculateLayout();
     void Refresh();
@@ -2169,20 +2167,15 @@ namespace Fusion.StatsInternal {
 
 #region Assets/Photon/Fusion/Runtime/FusionUnityLogger.cs
 
-namespace Fusion {
-  using System;
-  using System.Collections;
-  using System.Collections.Generic;
-  using System.Runtime.CompilerServices;
-  using System.Runtime.ExceptionServices;
-  using System.Text;
-  using System.Threading;
-  using UnityEditor;
-  using UnityEngine;
-  using UnityEngine.Serialization;
-  using Object = UnityEngine.Object;
+namespace Fusion
+{
+    using System;
+    using System.Runtime.ExceptionServices;
+    using System.Text;
+    using System.Threading;
+    using UnityEngine;
 
-  [Serializable]
+    [Serializable]
   public partial class FusionUnityLogger : Fusion.ILogger {
 
     /// <summary>
@@ -2510,19 +2503,18 @@ namespace Fusion {
 #region Assets/Photon/Fusion/Runtime/NetworkObjectBaker.cs
 
 ﻿//#undef UNITY_EDITOR
-namespace Fusion {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Text;
-  using System.Threading.Tasks;
-  using UnityEngine;
+namespace Fusion
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
 
 #if UNITY_EDITOR
-  using UnityEditor;
 #endif
 
-  public class NetworkObjectBaker {
+    public class NetworkObjectBaker {
 
     private List<NetworkObject> _allNetworkObjects             = new List<NetworkObject>();
     private List<TransformPath> _networkObjectsPaths           = new List<TransformPath>();
@@ -2918,11 +2910,11 @@ namespace Fusion {
 
 #region Assets/Photon/Fusion/Runtime/NetworkPrefabSourceUnity.cs
 
-﻿namespace Fusion {
-  using System;
-  using Object = UnityEngine.Object;
+﻿namespace Fusion
+{
+    using System;
 
-  [Serializable]
+    [Serializable]
   public class NetworkPrefabSourceStatic : NetworkAssetSourceStatic<NetworkObject>, INetworkPrefabSource {
     public NetworkObjectGuid               AssetGuid;
     NetworkObjectGuid INetworkPrefabSource.AssetGuid => AssetGuid;
@@ -2954,14 +2946,14 @@ namespace Fusion {
 
 #region Assets/Photon/Fusion/Runtime/Utilities/FusionScalableIMGUI.cs
 
-namespace Fusion {
-  using System.Reflection;
-  using UnityEngine;
+namespace Fusion
+{
+    using UnityEngine;
 
-  /// <summary>
-  /// In-Game IMGUI style used for the <see cref="FusionBootstrapDebugGUI"/> interface.
-  /// </summary>
-  public static class FusionScalableIMGUI {
+    /// <summary>
+    /// In-Game IMGUI style used for the <see cref="FusionBootstrapDebugGUI"/> interface.
+    /// </summary>
+    public static class FusionScalableIMGUI {
     private static GUISkin _scalableSkin;
 
     private static void InitializedGUIStyles(GUISkin baseSkin) {
@@ -3044,17 +3036,16 @@ namespace Fusion {
 
 #region Assets/Photon/Fusion/Runtime/Utilities/FusionUnitySceneManagerUtils.cs
 
-﻿namespace Fusion {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Text;
-  using System.Threading.Tasks;
-  using UnityEditor;
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
+﻿namespace Fusion
+{
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEditor;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
 
-  public static class FusionUnitySceneManagerUtils {
+    public static class FusionUnitySceneManagerUtils {
 
     public class SceneEqualityComparer : IEqualityComparer<Scene> {
       public bool Equals(Scene x, Scene y) {
@@ -3285,9 +3276,9 @@ namespace Fusion {
 
 namespace Fusion
 {
-  using System.Collections.Generic;
-  using UnityEngine;
-  using Analyzer;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using Analyzer;
 
     public static class NetworkRunnerVisibilityExtensions {
    

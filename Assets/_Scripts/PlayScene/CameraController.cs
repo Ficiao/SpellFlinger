@@ -21,12 +21,14 @@ namespace SpellFlinger.PlayScene
         private bool _initialized = false;
 
         public Transform ShootPoint => _shootPoint;
+        public bool CameraLock { get; set; }
 
         public bool CameraEnabled
         {
             get => _cameraEnabled;
             set
             {
+                if (CameraLock) value = false;
                 _cameraEnabled = value;
                 if (_cameraEnabled)
                 {
@@ -43,6 +45,9 @@ namespace SpellFlinger.PlayScene
 
         private void LateUpdate()
         {
+
+            Debug.DrawLine(transform.position, transform.position + transform.forward * 50, Color.green);
+
             if (!_initialized) return;
             if (Input.GetKeyDown(KeyCode.LeftAlt))
             {
@@ -51,7 +56,7 @@ namespace SpellFlinger.PlayScene
 
             if (!_cameraEnabled) return;
 
-            float angle = - SensitivitySettingsScriptable.Instance.UpDownSensitivity * Input.GetAxis("Mouse Y") * Time.deltaTime;
+            float angle = - SensitivitySettingsScriptable.Instance.UpDownSensitivity * Input.GetAxis("Mouse Y");
             angle = Mathf.Clamp(angle, -_maxCameraAngle / _maxAngleDelta, _maxCameraAngle / _maxAngleDelta);
             _oldRotation = _endTarget.localEulerAngles;
             _endTarget.Rotate(angle, 0, 0);

@@ -1,5 +1,6 @@
 ﻿using Fusion;
 using SpellFlinger.Enum;
+using SpellSlinger.Networking;
 using System.Linq;
 using UnityEngine;
 
@@ -10,18 +11,20 @@ namespace SpellFlinger.PlayScene
         [SerializeField] private float _range = 0f;
         [SerializeField] private float _dissolveDelay = 0f;
         [SerializeField] private float _slowDuration = 0f;
-        private bool _stopped = false;
+        [SerializeField] private GameObject _projectileModel = null;
+        
+        [Networked] public bool ProjectileHit { get; private set; }
 
-        public override void Throw(Vector3 direction, PlayerRef ownerPlayerRef, PlayerStats ownerPlayerStats)
+        public override void Throw(Vector3 direction, PlayerStats ownerPlayerStats)
         {
-            _direction = direction.normalized * _movementSpeed;
-            _ownerPlayerRef = ownerPlayerRef;
-            _ownerPlayerStats = ownerPlayerStats;
+            Direction = direction.normalized * _movementSpeed;
+            OwnerPlayerStats = ownerPlayerStats;
+            transform.rotation = Quaternion.FromToRotation(transform.forward, Direction.normalized);
         }
 
         public override void FixedUpdateNetwork()
         {
-            if (_stopped) return;
+            if (ProjectileHit) return;
 
             /*
              * U ovoj metodi je potrebno napraviti detekciju pogotka, slično kao u metodi FixedNetworkUpdate
@@ -30,8 +33,19 @@ namespace SpellFlinger.PlayScene
              * U slučaju pogotka igrača potrebno je odmah uništiti objekt projektila, a ako je pogođen teren
              * projektil je potrebno uništiti nakon odgode vremena.
              */
+            
         }
 
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+        public void RPC_LockModelToPlayer(Vector3 localPosition, PlayerStats player)
+        {
+            _projectileModel.transform.parent = player.transform;
+            _projectileModel.transform.localPosition = localPosition;
+            Destroy(_projectileModel.gameObject, _dissolveDelay);
+        }
+
+
+        //This code can be used for testing hit range
         //private void Update()
         //{
         //    Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);

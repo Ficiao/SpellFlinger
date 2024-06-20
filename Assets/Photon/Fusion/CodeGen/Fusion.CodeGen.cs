@@ -9,19 +9,18 @@
 
 #region Assets/Photon/Fusion/CodeGen/ForLoopMacro.cs
 
-﻿#if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
-  using static ILWeaverOpCodes;
-  using MethodBody = Mono.Cecil.Cil.MethodBody;
+#if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Collections.Generic;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
+    using static ILWeaverOpCodes;
+    using MethodBody = Mono.Cecil.Cil.MethodBody;
 
-  public readonly struct NewArrayWithLengthEqualToOtherArrayOrZero : ILProcessorMacro {
+    public readonly struct NewArrayWithLengthEqualToOtherArrayOrZero : ILProcessorMacro {
     public readonly Action<ILProcessor> GetArray;
     public readonly TypeReference       ArrayElementType;
 
@@ -186,11 +185,12 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
-  using System;
-  using Mono.Cecil.Cil;
+namespace Fusion.CodeGen
+{
+    using System;
+    using Mono.Cecil.Cil;
 
-  internal struct ILMacroStruct : ILProcessorMacro {
+    internal struct ILMacroStruct : ILProcessorMacro {
     Action<ILProcessor> generator;
     Instruction[] instructions;
     public static implicit operator ILMacroStruct(Instruction[] instructions) {
@@ -231,17 +231,18 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaver.Cache.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
+namespace Fusion.CodeGen
+{
 
-  using System;
-  using System.Linq;
-  using System.Runtime.CompilerServices;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
-  using static Fusion.CodeGen.ILWeaverOpCodes;
+    using System;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
+    using static Fusion.CodeGen.ILWeaverOpCodes;
 
-  partial class ILWeaver {
+    partial class ILWeaver {
 
     private TypeReference MakeFixedBuffer(ILWeaverAssembly asm, int wordCount) {
 
@@ -612,21 +613,22 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Runtime.CompilerServices;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
-  using Mono.Collections.Generic;
-  using static Fusion.CodeGen.ILWeaverOpCodes;
-  using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
-  using MethodAttributes = Mono.Cecil.MethodAttributes;
-  using ParameterAttributes = Mono.Cecil.ParameterAttributes;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
+    using Mono.Collections.Generic;
+    using static Fusion.CodeGen.ILWeaverOpCodes;
+    using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
+    using MethodAttributes = Mono.Cecil.MethodAttributes;
+    using ParameterAttributes = Mono.Cecil.ParameterAttributes;
 
-  public unsafe partial class ILWeaver {
+    public unsafe partial class ILWeaver {
 
     Dictionary<TypeReference, int> _rpcCount = new Dictionary<TypeReference, int>(new MemberReferenceFullNameComparer());
 
@@ -1960,15 +1962,16 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaver.INetworkedStruct.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System;
-  using System.Runtime.CompilerServices;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using static Fusion.CodeGen.ILWeaverOpCodes;
-  using FieldAttributes = Mono.Cecil.FieldAttributes;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Runtime.CompilerServices;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using static Fusion.CodeGen.ILWeaverOpCodes;
+    using FieldAttributes = Mono.Cecil.FieldAttributes;
 
-  unsafe partial class ILWeaver {
+    unsafe partial class ILWeaver {
 
     const int WordSize = Allocator.REPLICATE_WORD_SIZE;
     NetworkTypeInfoRegistry TypeRegistry;
@@ -2203,24 +2206,24 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaver.NetworkBehaviour.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Runtime.CompilerServices;
-  using static Fusion.CodeGen.ILWeaverOpCodes;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
-  using FieldAttributes = Mono.Cecil.FieldAttributes;
-  using MethodAttributes = Mono.Cecil.MethodAttributes;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+    using static Fusion.CodeGen.ILWeaverOpCodes;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
+    using FieldAttributes = Mono.Cecil.FieldAttributes;
+    using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 #if UNITY_EDITOR
-  using UnityEngine;
-  using UnityEngine.Scripting;
+    using UnityEngine.Scripting;
 #endif
 
-  unsafe partial class ILWeaver {
+    unsafe partial class ILWeaver {
 
     FieldDefinition AddNetworkBehaviourBackingField(PropertyDefinition property) {
 
@@ -2926,15 +2929,16 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaverAssembly.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
 
-  using Mono.Cecil;
+    using Mono.Cecil;
 
-  public class ILWeaverImportedType {
+    public class ILWeaverImportedType {
     public Type                 ClrType;
     public ILWeaverAssembly     Assembly;
     public List<TypeDefinition> BaseDefinitions;
@@ -3164,13 +3168,14 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_WEAVER_ILPOSTPROCESSOR && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
-  using System.Collections.Generic;
-  using System.IO;
-  using System.Linq;
-  using Mono.Cecil;
+namespace Fusion.CodeGen
+{
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using Mono.Cecil;
 
-  internal class ILWeaverAssemblyResolver : IAssemblyResolver {
+    internal class ILWeaverAssemblyResolver : IAssemblyResolver {
     private List<string> _lookInDirectories;
     private Dictionary<string, string> _assemblyNameToPath;
     private Dictionary<string, AssemblyDefinition> _resolvedAssemblies = new Dictionary<string, AssemblyDefinition>();
@@ -3355,24 +3360,25 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaverBindings.ILPostProcessor.cs
 
 #if FUSION_WEAVER_ILPOSTPROCESSOR
-namespace Fusion.CodeGen {
-  using System;
-  using Unity.CompilationPipeline.Common.ILPostProcessing;
+namespace Fusion.CodeGen
+{
+    using System;
+    using Unity.CompilationPipeline.Common.ILPostProcessing;
 
 #if FUSION_WEAVER
-  using System.Collections.Generic;
-  using Unity.CompilationPipeline.Common.Diagnostics;
+    using System.Collections.Generic;
+    using Unity.CompilationPipeline.Common.Diagnostics;
 #if FUSION_HAS_MONO_CECIL
-  using System.IO;
-  using System.Linq;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using System.Reflection;
+    using System.IO;
+    using System.Linq;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using System.Reflection;
 
-  using System.Runtime.Serialization.Json;
-  using System.Xml.Linq;
+    using System.Runtime.Serialization.Json;
+    using System.Xml.Linq;
 
-  class ILWeaverBindings : ILPostProcessor {
+    class ILWeaverBindings : ILPostProcessor {
 
     const string ConfigPathCachePath = "Temp/FusionILWeaverConfigPath.txt";
     const string MainAssemblyName = "Assembly-CSharp";
@@ -3841,11 +3847,12 @@ namespace Fusion.CodeGen {
 
 #region Assets/Photon/Fusion/CodeGen/ILWeaverException.cs
 
-namespace Fusion.CodeGen {
-  using System;
-  using System.Diagnostics;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Diagnostics;
 
-  public class ILWeaverException : Exception {
+    public class ILWeaverException : Exception {
     public ILWeaverException(string error) : base(error) {
     }
 
@@ -3868,16 +3875,17 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaverExtensions.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
+namespace Fusion.CodeGen
+{
 
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using BindingFlags = System.Reflection.BindingFlags;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using BindingFlags = System.Reflection.BindingFlags;
 
-  public static class ILWeaverExtensions {
+    public static class ILWeaverExtensions {
 
     public static bool IsIntegral(this TypeReference type) {
       switch (type.MetadataType) {
@@ -4630,14 +4638,15 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
+namespace Fusion.CodeGen
+{
 
-  using System;
-  using System.Diagnostics;
-  using System.Runtime.CompilerServices;
-  using Mono.Cecil;
+    using System;
+    using System.Diagnostics;
+    using System.Runtime.CompilerServices;
+    using Mono.Cecil;
 
-  public interface ILWeaverLogger {
+    public interface ILWeaverLogger {
     void Log(LogType logType, string message, string filePath, int lineNumber);
     void Log(Exception ex);
   }
@@ -4799,12 +4808,13 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_WEAVER_ILPOSTPROCESSOR && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
-  using System;
-  using System.Collections.Generic;
-  using Unity.CompilationPipeline.Common.Diagnostics;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Collections.Generic;
+    using Unity.CompilationPipeline.Common.Diagnostics;
 
-  class ILWeaverLoggerDiagnosticMessages : ILWeaverLogger {
+    class ILWeaverLoggerDiagnosticMessages : ILWeaverLogger {
 
     public List<DiagnosticMessage> Messages { get; } = new List<DiagnosticMessage>();
 
@@ -4862,11 +4872,12 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
+namespace Fusion.CodeGen
+{
 
-  using System;
+    using System;
 
-  public class ILWeaverLoggerUnityDebug : ILWeaverLogger {
+    public class ILWeaverLoggerUnityDebug : ILWeaverLogger {
 
     public void Log(LogType logType, string message, string filePath, int lineNumber) {
       switch (logType) {
@@ -4899,16 +4910,17 @@ namespace Fusion.CodeGen {
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
 
-namespace Fusion.CodeGen {
+namespace Fusion.CodeGen
+{
 
-  using System;
-  using System.Collections.Generic;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
-  using static Fusion.CodeGen.ILWeaverOpCodes;
+    using System;
+    using System.Collections.Generic;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
+    using static Fusion.CodeGen.ILWeaverOpCodes;
 
-  class MethodContext : IDisposable {
+    class MethodContext : IDisposable {
 
     public Action<ILProcessor, TypeReference, ICustomAttributeProvider> LoadElementReaderWriterImpl;
     private Action<ILProcessor> _addressGetter;
@@ -5280,13 +5292,13 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaverOpCodes.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System.Reflection;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using MethodBody = Mono.Cecil.Cil.MethodBody;
+namespace Fusion.CodeGen
+{
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using MethodBody = Mono.Cecil.Cil.MethodBody;
 
-  static class ILWeaverOpCodes {
+    static class ILWeaverOpCodes {
     // utils
     public static Instruction Nop()    => Instruction.Create(OpCodes.Nop);
     public static Instruction Ret()    => Instruction.Create(OpCodes.Ret);
@@ -5582,10 +5594,11 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/ILWeaverSettings.cs
 
 #if FUSION_WEAVER
-namespace Fusion.CodeGen {
-  using System;
+namespace Fusion.CodeGen
+{
+    using System;
 
-  public partial class ILWeaverSettings {
+    public partial class ILWeaverSettings {
 
     public static string DefaultConfigPath {
       get {
@@ -5620,11 +5633,12 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/InstructionEqualityComparer.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System.Collections.Generic;
-  using Mono.Cecil.Cil;
+namespace Fusion.CodeGen
+{
+    using System.Collections.Generic;
+    using Mono.Cecil.Cil;
 
-  internal class InstructionEqualityComparer : IEqualityComparer<Instruction> {
+    internal class InstructionEqualityComparer : IEqualityComparer<Instruction> {
     public bool Equals(Instruction x, Instruction y) {
       if (x.OpCode != y.OpCode) {
         return false;
@@ -5657,11 +5671,12 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/MemberReferenceFullNameComparer.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System.Collections.Generic;
-  using Mono.Cecil;
+namespace Fusion.CodeGen
+{
+    using System.Collections.Generic;
+    using Mono.Cecil;
 
-  class MemberReferenceFullNameComparer : IEqualityComparer<MemberReference> {
+    class MemberReferenceFullNameComparer : IEqualityComparer<MemberReference> {
     bool IEqualityComparer<MemberReference>.Equals(MemberReference x, MemberReference y) {
       if ( x == y ) {
         return true;
@@ -5698,24 +5713,24 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/MonoCecilExtensions.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
+namespace Fusion.CodeGen
+{
 
-  using System;
-  using System.Collections.Generic;
-  using System.Diagnostics;
-  using System.Linq;
-  using System.Linq.Expressions;
-  using System.Reflection;
-  using System.Runtime.CompilerServices;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
-  using UnityEditor;
-  using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
-  using MethodAttributes = Mono.Cecil.MethodAttributes;
-  using MethodBody = Mono.Cecil.Cil.MethodBody;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
+    using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
+    using MethodAttributes = Mono.Cecil.MethodAttributes;
+    using MethodBody = Mono.Cecil.Cil.MethodBody;
 
-  public static class MonoCecilExtensions {
+    public static class MonoCecilExtensions {
     public static MethodDefinition AddDefaultConstructor(this TypeDefinition type, Action<ILProcessor> initializers = null) {
       var methodAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
       var method = new MethodDefinition(".ctor", methodAttributes, type.Module.ImportReference(typeof(void)));
@@ -6226,14 +6241,14 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/NetworkTypeInfo.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System;
-  using System.Linq;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using static ILWeaverOpCodes;
+namespace Fusion.CodeGen
+{
+    using System;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using static ILWeaverOpCodes;
 
-  [Flags]
+    [Flags]
   public enum NetworkTypeInfoFlags {
     IsTriviallyCopyable = 1 << 0,
     CantBeUsedInStructs = 1 << 1,
@@ -6456,25 +6471,24 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/NetworkTypeInfoRegistry.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using Mono.Cecil;
-  using Mono.Cecil.Cil;
-  using Mono.Cecil.Rocks;
+namespace Fusion.CodeGen
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
+    using Mono.Cecil.Rocks;
 
 #if UNITY_EDITOR
-  using UnityEngine;
+    using UnityEngine;
 #endif
 
-  using static ILWeaverOpCodes;
-  using Behaviour = Fusion.Behaviour;
-  using FieldAttributes = Mono.Cecil.FieldAttributes;
-  using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
+    using static ILWeaverOpCodes;
+    using FieldAttributes = Mono.Cecil.FieldAttributes;
+    using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
 
-  public class NetworkTypeInfoRegistry {
+    public class NetworkTypeInfoRegistry {
 
     public delegate int CalculateWordCountDelegate(TypeReference type);
 
@@ -7301,10 +7315,11 @@ namespace Fusion.CodeGen {
 #region Assets/Photon/Fusion/CodeGen/NetworkTypeWrapInfo.cs
 
 #if FUSION_WEAVER && FUSION_HAS_MONO_CECIL
-namespace Fusion.CodeGen {
-  using Mono.Cecil;
+namespace Fusion.CodeGen
+{
+    using Mono.Cecil;
 
-  public class NetworkTypeWrapInfo {
+    public class NetworkTypeWrapInfo {
     public NetworkTypeInfo WrapperTypeInfo;
     public TypeReference   WrapperType;
     public TypeReference   TargetType;

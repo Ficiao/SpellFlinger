@@ -1,5 +1,6 @@
 namespace Fusion {
-  using System.Runtime.CompilerServices;
+    using System;
+    using System.Runtime.CompilerServices;
   using System.Runtime.InteropServices;
   using UnityEngine;
 
@@ -41,10 +42,13 @@ namespace Fusion {
     [Header("Character Controller Settings")]
     public float gravity = -20.0f;
     public float jumpImpulse   = 8.0f;
-    public float acceleration  = 10.0f;
-    public float braking       = 10.0f;
-    public float maxSpeed      = 2.0f;
     public float rotationSpeed = 15.0f;
+    public float moveSpeed = 0f;
+    public float slowAmount = 0f;
+    public float doubleJumpBoost = 0f;
+    public float slopeRaycastDistance = 0f;
+
+    private float _squareOfTwo = Mathf.Sqrt(2);
 
     Tick                _initial;
     CharacterController _controller;
@@ -66,47 +70,58 @@ namespace Fusion {
     }
 
 
-    public void Jump(bool ignoreGrounded = false, float? overrideImpulse = null) {
+    public void Jump(bool ignoreGrounded = false, bool doubleJump = false) {
       if (Data.Grounded || ignoreGrounded) {
         var newVel = Data.Velocity;
-        newVel.y      += overrideImpulse ?? jumpImpulse;
+        newVel.y = doubleJump ? doubleJumpBoost : jumpImpulse;
         Data.Velocity =  newVel;
       }
     }
 
-    public void Move(Vector3 direction) {
-      var deltaTime    = Runner.DeltaTime;
-      var previousPos  = transform.position;
-      var moveVelocity = Data.Velocity;
+    public void Move(Vector2 direction, bool isSlowed, float rotation, bool isGrounded)
+    {
+        var deltaTime = Runner.DeltaTime;
+        var moveVelocity = Data.Velocity;
 
-      direction = direction.normalized;
+        if (Data.Grounded && moveVelocity.y < 0)
+        {
+            moveVelocity.y = 0f;
+        }
 
-      if (Data.Grounded && moveVelocity.y < 0) {
-        moveVelocity.y = 0f;
-      }
+        Vector3 _moveDirection = transform.right * direction.x + transform.forward * direction.y;
+        _moveDirection *= moveSpeed;
+        if (isSlowed) _moveDirection *= slowAmount;
+        if (direction.x != 0 && direction.y != 0) _moveDirection /= _squareOfTwo;
 
-      moveVelocity.y += gravity * Runner.DeltaTime;
+        moveVelocity.y += gravity * deltaTime;
 
-      var horizontalVel = default(Vector3);
-      horizontalVel.x = moveVelocity.x;
-      horizontalVel.z = moveVelocity.z;
+        _moveDirection = AdjustVelocityToSlope(_moveDirection);
+        _moveDirection.y += moveVelocity.y;
+        _controller.Move(_moveDirection * deltaTime);
 
-      if (direction == default) {
-        horizontalVel = Vector3.Lerp(horizontalVel, default, braking * deltaTime);
-      } else {
-        horizontalVel      = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed);
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), rotationSpeed * Runner.DeltaTime);
-      }
+        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y + rotation, 0);
 
-      moveVelocity.x = horizontalVel.x;
-      moveVelocity.z = horizontalVel.z;
-
-      _controller.Move(moveVelocity * deltaTime);
-
-      Data.Velocity = (transform.position - previousPos) * Runner.TickRate;
-      Data.Grounded = _controller.isGrounded;
+        moveVelocity = _moveDirection;
+        Data.Velocity = moveVelocity;
+        Data.Grounded = isGrounded;
     }
-    
+
+    private Vector3 AdjustVelocityToSlope(Vector3 velocity)
+    {
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, slopeRaycastDistance))
+        {
+            if (hit.collider.tag == "Ground")
+            {
+                Quaternion slopeRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                Vector3 adjustedVelocity = slopeRotation * velocity;
+
+                if (adjustedVelocity.y < 0) return adjustedVelocity;
+            }
+        }
+
+        return velocity;
+    }
+
     public override void Spawned() {
       _initial = default;
       TryGetComponent(out _controller);

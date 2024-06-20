@@ -2,10 +2,11 @@
 
 #region Assets/Photon/Fusion/Editor/AssetObjectEditor.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  [CustomEditor(typeof(AssetObject), true)]
+    [CustomEditor(typeof(AssetObject), true)]
   public class AssetObjectEditor : UnityEditor.Editor {
     public override void OnInspectorGUI() {
       base.OnInspectorGUI();
@@ -19,14 +20,11 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/BehaviourEditor.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-
-  [CustomEditor(typeof(Fusion.Behaviour), true)]
+    [CustomEditor(typeof(Fusion.Behaviour), true)]
   [CanEditMultipleObjects]
   public partial class BehaviourEditor : FusionEditor {
   }
@@ -46,19 +44,20 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/FixedBufferPropertyAttributeDrawer.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using Fusion.Internal;
-  using Unity.Collections.LowLevel.Unsafe;
-  using UnityEditor;
-  using UnityEditor.Compilation;
-  using UnityEngine;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using Fusion.Internal;
+    using Unity.Collections.LowLevel.Unsafe;
+    using UnityEditor;
+    using UnityEditor.Compilation;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(FixedBufferPropertyAttribute))]
+    [CustomPropertyDrawer(typeof(FixedBufferPropertyAttribute))]
   unsafe class FixedBufferPropertyAttributeDrawer : PropertyDrawerWithErrorHandling {
     public const string FixedBufferFieldName = "Data";
     public const string WrapperSurrogateDataPath = "Surrogate.Data";
@@ -488,12 +487,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/INetworkPrefabSourceDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using UnityEditor;
-  using UnityEngine;
-  
-  [CustomPropertyDrawer(typeof(INetworkPrefabSource), true)]
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
+
+    [CustomPropertyDrawer(typeof(INetworkPrefabSource), true)]
   class INetworkPrefabSourceDrawer : PropertyDrawerWithErrorHandling {
 
     const int ThumbnailWidth = 20;
@@ -567,14 +566,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/NetworkBoolDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(NetworkBool))]
+    [CustomPropertyDrawer(typeof(NetworkBool))]
   public class NetworkBoolDrawer : PropertyDrawer {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
       using (new FusionEditorGUI.PropertyScope(position, label, property)) {
@@ -595,11 +592,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/NetworkObjectGuidDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(NetworkObjectGuid))]
+    [CustomPropertyDrawer(typeof(NetworkObjectGuid))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   class NetworkObjectGuidDrawer : PropertyDrawerWithErrorHandling {
 
@@ -650,14 +648,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/NetworkPrefabAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(NetworkPrefabAttribute))]
+    [CustomPropertyDrawer(typeof(NetworkPrefabAttribute))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   class NetworkPrefabAttributeDrawer : PropertyDrawerWithErrorHandling {
 
@@ -738,14 +734,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/NetworkPrefabRefDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(NetworkPrefabRef))]
+    [CustomPropertyDrawer(typeof(NetworkPrefabRef))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   class NetworkPrefabRefDrawer : PropertyDrawerWithErrorHandling {
 
@@ -826,15 +820,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/NetworkStringDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using System.Text;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Text;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(NetworkString<>))]
+    [CustomPropertyDrawer(typeof(NetworkString<>))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   class NetworkStringDrawer : PropertyDrawerWithErrorHandling {
 
@@ -895,13 +888,14 @@ namespace Fusion.Editor {
 #region Assets/Photon/Fusion/Editor/CustomTypes/NormalizedRectAttributeDrawer.cs
 
 
-namespace Fusion.Editor {
-  using System;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEngine;
 
 #if UNITY_EDITOR
-  [CustomPropertyDrawer(typeof(NormalizedRectAttribute))]
+    [CustomPropertyDrawer(typeof(NormalizedRectAttribute))]
   public class NormalizedRectAttributeDrawer : PropertyDrawer {
 
     bool isDragNewRect;
@@ -1222,14 +1216,13 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/SceneRefDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(SceneRef))]
+    [CustomPropertyDrawer(typeof(SceneRef))]
   public class SceneRefDrawer : PropertyDrawer {
 
     public const int CheckboxWidth = 16;
@@ -1272,18 +1265,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/SerializableDictionaryDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using System.Text;
-  using System.Threading.Tasks;
-  using UnityEditor;
-  using UnityEditorInternal;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(SerializableDictionary), true)]
+    [CustomPropertyDrawer(typeof(SerializableDictionary), true)]
   class SerializableDictionaryDrawer : PropertyDrawerWithErrorHandling {
     const string ItemsPropertyPath    = SerializableDictionary<int,int>.ItemsPropertyPath;
     const string EntryKeyPropertyPath = SerializableDictionary<int, int>.EntryKeyPropertyPath;
@@ -1342,13 +1331,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/CustomTypes/TickRateDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(TickRate.Selection))]
+    [CustomPropertyDrawer(typeof(TickRate.Selection))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   public class TickRateDrawer : PropertyDrawer { 
     private const int PAD = 0;
@@ -1602,14 +1592,15 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/DebugDllToggle.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.IO;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.IO;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  public static class DebugDllToggle {
+    public static class DebugDllToggle {
 
     const string FusionRuntimeDllGuid = "e725a070cec140c4caffb81624c8c787";
 
@@ -1688,14 +1679,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/EditorRecompileHook.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.IO;
-  using UnityEditor;
-  using UnityEditor.Compilation;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.IO;
+    using UnityEditor;
+    using UnityEditor.Compilation;
 
-  [InitializeOnLoad]
+    [InitializeOnLoad]
   public static class EditorRecompileHook {
     static EditorRecompileHook() {
       
@@ -1753,11 +1744,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionAssistants.cs
 
-namespace Fusion.Editor {
-  using UnityEngine;
-  using System;
+namespace Fusion.Editor
+{
+    using UnityEngine;
+    using System;
 
-  static class FusionAssistants {
+    static class FusionAssistants {
     public const int PRIORITY = 0;
     public const int PRIORITY_LOW = 1000;
 
@@ -1890,13 +1882,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionBootstrapEditor.cs
 
-namespace Fusion.Editor {
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
+namespace Fusion.Editor
+{
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
 
-  [CustomEditor(typeof(FusionBootstrap))]
+    [CustomEditor(typeof(FusionBootstrap))]
   public class FusionBootstrapEditor : BehaviourEditor {
 
     public override void OnInspectorGUI() {
@@ -1930,14 +1923,15 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionBuildTriggers.cs
 
-namespace Fusion.Editor {
- 
-  using UnityEditor;
-  using UnityEditor.Build;
-  using UnityEditor.Build.Reporting;
+namespace Fusion.Editor
+{
+
+    using UnityEditor;
+    using UnityEditor.Build;
+    using UnityEditor.Build.Reporting;
 
 
-  public class FusionBuildTriggers : IPreprocessBuildWithReport {
+    public class FusionBuildTriggers : IPreprocessBuildWithReport {
 
     public const int CallbackOrder = 1000;
 
@@ -2085,18 +2079,18 @@ namespace Fusion.Editor {
 
 #region AssetDatabaseUtils.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEditor.Build;
-  using UnityEditor.PackageManager;
-  using UnityEngine;
-  using Object = UnityEngine.Object;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEditor.Build;
+    using UnityEditor.PackageManager;
+    using UnityEngine;
 
-  public static partial class AssetDatabaseUtils {
+    public static partial class AssetDatabaseUtils {
     
     public static void SetAssetAndTheMainAssetDirty(UnityEngine.Object obj) {
       EditorUtility.SetDirty(obj);
@@ -2525,15 +2519,16 @@ namespace Fusion.Editor {
 
 #region EditorButtonDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  public struct EditorButtonDrawer {
+    public struct EditorButtonDrawer {
 
     private struct ButtonEntry {
       public MethodInfo                                Method;
@@ -2669,15 +2664,16 @@ namespace Fusion.Editor {
 
 #region EnumDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  public struct EnumDrawer {
+    public struct EnumDrawer {
     private Mask256[]   _values;
     private string[]    _names;
     private bool        _isFlags;
@@ -2912,8 +2908,9 @@ namespace Fusion.Editor {
 
 #region HashCodeUtilities.cs
 
-namespace Fusion.Editor {
-  internal static class HashCodeUtilities {
+namespace Fusion.Editor
+{
+    internal static class HashCodeUtilities {
     public const int InitialHash = (5381 << 16) + 5381;
 
 
@@ -2999,13 +2996,14 @@ namespace Fusion.Editor {
 
 #region LazyAsset.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using UnityEngine;
-  using Object = UnityEngine.Object;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using Object = UnityEngine.Object;
 
-  public class LazyAsset<T> {
+    public class LazyAsset<T> {
     private T _value;
     private Func<T> _factory;
 
@@ -3151,11 +3149,12 @@ namespace Fusion.Editor {
 
 #region PathUtils.cs
 
-namespace Fusion.Editor {
-  using System;
+namespace Fusion.Editor
+{
+    using System;
 
-  // TODO: this should be moved to the runtime part
-  static partial class PathUtils {
+    // TODO: this should be moved to the runtime part
+    static partial class PathUtils {
     
     public static bool TryMakeRelativeToFolder(string path, string folderWithSlashes, out string result) {
       var index = path.IndexOf(folderWithSlashes, StringComparison.Ordinal);
@@ -3217,18 +3216,19 @@ namespace Fusion.Editor {
 
 #region FusionCodeDoc.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.IO;
-  using System.Linq;
-  using System.Reflection;
-  using System.Text.RegularExpressions;
-  using System.Xml;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text.RegularExpressions;
+    using System.Xml;
+    using UnityEditor;
+    using UnityEngine;
 
-  public static class FusionCodeDoc {
+    public static class FusionCodeDoc {
     public const string Label            = "FusionCodeDoc";
     public const string Extension        = "xml";
     public const string ExtensionWithDot = "." + Extension;
@@ -3527,15 +3527,9 @@ namespace Fusion.Editor {
 
 #region FusionEditor.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
-
-  public abstract class FusionEditor :
+namespace Fusion.Editor
+{
+    public abstract class FusionEditor :
 #if ODIN_INSPECTOR && !FUSION_ODIN_DISABLED
     Sirenix.OdinInspector.Editor.OdinEditor
 #else
@@ -3584,15 +3578,16 @@ namespace Fusion.Editor {
 
 #region FusionEditorGUI.InlineHelp.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  public static partial class FusionEditorGUI {
+    public static partial class FusionEditorGUI {
     private const float SCROLL_WIDTH     = 16f;
     private const float LEFT_HELP_INDENT = 8f;
     
@@ -3934,10 +3929,11 @@ namespace Fusion.Editor {
 
 #region FusionEditorGUI.Odin.cs
 
-namespace Fusion.Editor {
-  using System;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEngine;
 #if ODIN_INSPECTOR && !FUSION_ODIN_DISABLED
   using System.Collections.Generic;
   using Sirenix.Utilities.Editor;
@@ -3945,7 +3941,7 @@ namespace Fusion.Editor {
   using Sirenix.Utilities;
 #endif
 
-  public static partial class FusionEditorGUI {
+    public static partial class FusionEditorGUI {
     public static T IfOdin<T>(T ifOdin, T ifNotOdin) {
 #if ODIN_INSPECTOR && !FUSION_ODIN_DISABLED
       return ifOdin;
@@ -4087,13 +4083,13 @@ namespace Fusion.Editor {
 
 #region FusionEditorGUI.Scopes.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Runtime.CompilerServices;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEngine;
 
-  public static partial class FusionEditorGUI {
+    public static partial class FusionEditorGUI {
  
     public sealed class CustomEditorScope : IDisposable {
 
@@ -4351,14 +4347,15 @@ namespace Fusion.Editor {
 
 #region FusionEditorGUI.Utils.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  public static partial class FusionEditorGUI {
+    public static partial class FusionEditorGUI {
     public const string ScriptPropertyName = "m_Script";
 
     private const int IconHeight = 14;
@@ -4546,11 +4543,11 @@ namespace Fusion.Editor {
 
 #region FusionEditorUtility.cs
 
-namespace Fusion.Editor {
-  using System;
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  partial class FusionEditorUtility {
+    partial class FusionEditorUtility {
     public static void DelayCall(EditorApplication.CallbackFunction callback) {
       FusionEditorLog.Assert(callback.Target == null, "DelayCall callback needs to stateless");
       EditorApplication.delayCall -= callback;
@@ -4564,15 +4561,16 @@ namespace Fusion.Editor {
 
 #region FusionGlobalScriptableObjectUtils.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.IO;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  public static class FusionGlobalScriptableObjectUtils {
+    public static class FusionGlobalScriptableObjectUtils {
 
     public const string GlobalAssetLabel = "FusionDefaultGlobal";
 
@@ -4750,17 +4748,18 @@ namespace Fusion.Editor {
 
 #region FusionGrid.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Linq.Expressions;
-  using UnityEditor;
-  using UnityEditor.IMGUI.Controls;
-  using UnityEngine;
-  using Object = UnityEngine.Object;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using UnityEditor;
+    using UnityEditor.IMGUI.Controls;
+    using UnityEngine;
+    using Object = UnityEngine.Object;
 
- [Serializable]
+    [Serializable]
   public class FusionGridState : TreeViewState {
     public MultiColumnHeaderState HeaderState;
     public bool                   SyncSelection;
@@ -5130,10 +5129,11 @@ namespace Fusion.Editor {
 
 #region FusionMonoBehaviourDefaultEditor.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  [CustomEditor(typeof(FusionMonoBehaviour), true)]
+    [CustomEditor(typeof(FusionMonoBehaviour), true)]
   internal class FusionMonoBehaviourDefaultEditor : FusionEditor {
   }
 }
@@ -5143,10 +5143,11 @@ namespace Fusion.Editor {
 
 #region FusionPropertyDrawerMetaAttribute.cs
 
-namespace Fusion.Editor {
-  using System;
+namespace Fusion.Editor
+{
+    using System;
 
-  [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class)]
   public class FusionPropertyDrawerMetaAttribute : Attribute {
     public bool HasFoldout   { get; set; }
     public bool HandlesUnits { get; set; }
@@ -5158,10 +5159,11 @@ namespace Fusion.Editor {
 
 #region FusionScriptableObjectDefaultEditor.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  [CustomEditor(typeof(FusionScriptableObject), true)]
+    [CustomEditor(typeof(FusionScriptableObject), true)]
   internal class FusionScriptableObjectDefaultEditor : FusionEditor {
   }
 }
@@ -5171,13 +5173,14 @@ namespace Fusion.Editor {
 
 #region RawDataDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Text;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Text;
+    using UnityEditor;
+    using UnityEngine;
 
-  public struct RawDataDrawer {
+    public struct RawDataDrawer {
     private StringBuilder _builder;
     private GUIContent    _lastValue;
     private int           _lastHash;
@@ -5310,15 +5313,16 @@ namespace Fusion.Editor {
 
 #region ReflectionUtils.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Linq.Expressions;
-  using System.Reflection;
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
+    using UnityEditor;
 
-  static partial class ReflectionUtils {
+    static partial class ReflectionUtils {
     public const BindingFlags DefaultBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
     
     public static Type GetUnityLeafType(this Type type) {
@@ -5963,14 +5967,15 @@ namespace Fusion.Editor {
 
 #region SerializedPropertyUtilities.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections;
-  using System.Collections.Generic;
-  using System.Text.RegularExpressions;
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+    using UnityEditor;
 
-  static partial class SerializedPropertyUtilities {
+    static partial class SerializedPropertyUtilities {
     private static readonly Regex _arrayElementRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
 
     public static SerializedProperty FindPropertyOrThrow(this SerializedObject so, string propertyPath) {
@@ -6306,17 +6311,18 @@ namespace Fusion.Editor {
 
 #region UnityInternal.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
-  using static ReflectionUtils;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
+    using static ReflectionUtils;
 
 
-  static partial class UnityInternal {
+    static partial class UnityInternal {
     [UnityEditor.InitializeOnLoad]
     public static class Editor {
       public delegate bool DoDrawDefaultInspectorDelegate(SerializedObject obj);
@@ -6747,11 +6753,12 @@ namespace Fusion.Editor {
 
 #region ArrayLengthAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  internal partial class ArrayLengthAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
+    internal partial class ArrayLengthAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
 
     private GUIStyle _style;
 
@@ -6802,15 +6809,16 @@ namespace Fusion.Editor {
 
 #region AssemblyNameAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.IO;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(AssemblyNameAttribute))]
+    [CustomPropertyDrawer(typeof(AssemblyNameAttribute))]
   internal class AssemblyNameAttributeDrawer : PropertyDrawerWithErrorHandling {
     const float DropdownWidth = 20.0f;
 
@@ -6966,13 +6974,12 @@ namespace Fusion.Editor {
 
 #region BinaryDataAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Text;
-  using UnityEngine;
-  using UnityEditor;
-  
-  internal partial class BinaryDataAttributeDrawer : PropertyDrawerWithErrorHandling, INonApplicableOnArrayElements {
+namespace Fusion.Editor
+{
+    using UnityEngine;
+    using UnityEditor;
+
+    internal partial class BinaryDataAttributeDrawer : PropertyDrawerWithErrorHandling, INonApplicableOnArrayElements {
     
     private int           MaxLines  = 16;
     private RawDataDrawer _drawer   = new RawDataDrawer();
@@ -7097,15 +7104,16 @@ namespace Fusion.Editor {
 #region DecoratingPropertyAttributeDrawer.cs
 
 //#define FUSION_EDITOR_TRACE
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Diagnostics;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
-  
-  public abstract class DecoratingPropertyAttributeDrawer : PropertyDrawer {
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
+
+    public abstract class DecoratingPropertyAttributeDrawer : PropertyDrawer {
     private bool _isLastDrawer;
     private int _nestingLevel;
     
@@ -7338,14 +7346,15 @@ namespace Fusion.Editor {
 
 #region DisplayAsEnumAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(DisplayAsEnumAttribute))]
+    [CustomPropertyDrawer(typeof(DisplayAsEnumAttribute))]
   internal class DisplayAsEnumAttributeDrawer : PropertyDrawerWithErrorHandling {
 
     private EnumDrawer                 _enumDrawer;
@@ -7395,12 +7404,13 @@ namespace Fusion.Editor {
 
 #region DisplayNameAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  //[CustomPropertyDrawer(typeof(DisplayNameAttribute))]
-  internal class DisplayNameAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
+    //[CustomPropertyDrawer(typeof(DisplayNameAttribute))]
+    internal class DisplayNameAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
     private GUIContent _label = new GUIContent();
     
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
@@ -7437,13 +7447,14 @@ namespace Fusion.Editor {
 
 #region DoIfAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using UnityEditor;
 
-  internal abstract partial class DoIfAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
+    internal abstract partial class DoIfAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
     
     private static Dictionary<(Type, string), Func<object, object>> _cachedGetters = new Dictionary<(Type, string), Func<object, object>>();
     
@@ -7598,11 +7609,12 @@ namespace Fusion.Editor {
 
 #region DrawIfAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  internal partial class DrawIfAttributeDrawer : DoIfAttributeDrawer {
+    internal partial class DrawIfAttributeDrawer : DoIfAttributeDrawer {
     public DrawIfAttribute Attribute => (DrawIfAttribute)attribute;
 
     protected override float GetPropertyHeightInternal(SerializedProperty property, GUIContent label) {
@@ -7638,11 +7650,12 @@ namespace Fusion.Editor {
 
 #region DrawInlineAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(DrawInlineAttribute))]
+    [CustomPropertyDrawer(typeof(DrawInlineAttribute))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   internal partial class DrawInlineAttributeDrawer : PropertyDrawer {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -7675,11 +7688,12 @@ namespace Fusion.Editor {
 
 #region ErrorIfAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  internal partial class ErrorIfAttributeDrawer : MessageIfDrawerBase {
+    internal partial class ErrorIfAttributeDrawer : MessageIfDrawerBase {
     private new ErrorIfAttribute Attribute => (ErrorIfAttribute)attribute;
 
     protected override bool        IsBox          => Attribute.AsBox;
@@ -7701,13 +7715,14 @@ namespace Fusion.Editor {
 
 #region ExpandableEnumAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(ExpandableEnumAttribute))]
+    [CustomPropertyDrawer(typeof(ExpandableEnumAttribute))]
   internal class ExpandableEnumAttributeDrawer : PropertyDrawerWithErrorHandling {
     
     private const float ToggleIndent = 5;
@@ -7957,14 +7972,15 @@ namespace Fusion.Editor {
 
 #region FieldEditorButtonAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
-  using Object = UnityEngine.Object;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
+    using Object = UnityEngine.Object;
 
-  internal partial class FieldEditorButtonAttributeDrawer : DecoratingPropertyAttributeDrawer {
+    internal partial class FieldEditorButtonAttributeDrawer : DecoratingPropertyAttributeDrawer {
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
 
       var propertyPosition = position;
@@ -8024,11 +8040,12 @@ namespace Fusion.Editor {
 
 #region HideArrayElementLabelAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(HideArrayElementLabelAttribute))]
+    [CustomPropertyDrawer(typeof(HideArrayElementLabelAttribute))]
   partial class HideArrayElementLabelAttributeDrawer : DecoratingPropertyAttributeDrawer {
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
       if (property.IsArrayElement()) {
@@ -8044,14 +8061,14 @@ namespace Fusion.Editor {
 
 #region InlineHelpAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  //[CustomPropertyDrawer(typeof(InlineHelpAttribute))]
-  internal partial class InlineHelpAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
+    //[CustomPropertyDrawer(typeof(InlineHelpAttribute))]
+    internal partial class InlineHelpAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
     
     private bool       _initialized;
     private GUIContent _helpContent;
@@ -8200,8 +8217,9 @@ namespace Fusion.Editor {
 
 #region INonApplicableOnArrayElements.cs
 
-namespace Fusion.Editor {
-  public interface INonApplicableOnArrayElements {
+namespace Fusion.Editor
+{
+    public interface INonApplicableOnArrayElements {
   }
 }
 
@@ -8210,11 +8228,12 @@ namespace Fusion.Editor {
 
 #region LayerAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(LayerAttribute))]
+    [CustomPropertyDrawer(typeof(LayerAttribute))]
   internal class LayerAttributeDrawer : PropertyDrawer {
     public override void OnGUI(Rect p, SerializedProperty prop, GUIContent label) {
       EditorGUI.BeginChangeCheck();
@@ -8239,11 +8258,12 @@ namespace Fusion.Editor {
 
 #region LayerMatrixAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
-  
-  internal partial class LayerMatrixAttributeDrawer : PropertyDrawerWithErrorHandling, INonApplicableOnArrayElements {
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
+
+    internal partial class LayerMatrixAttributeDrawer : PropertyDrawerWithErrorHandling, INonApplicableOnArrayElements {
 
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
       using (new FusionEditorGUI.PropertyScopeWithPrefixLabel(position, label, property, out var valueRect)) {
@@ -8338,11 +8358,12 @@ namespace Fusion.Editor {
 
 #region MaxStringByteCountAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(MaxStringByteCountAttribute))]
+    [CustomPropertyDrawer(typeof(MaxStringByteCountAttribute))]
   internal class MaxStringByteCountAttributeDrawer : PropertyDrawerWithErrorHandling {
     
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
@@ -8368,11 +8389,12 @@ namespace Fusion.Editor {
 
 #region MessageIfDrawerBase.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  internal abstract class MessageIfDrawerBase : DoIfAttributeDrawer {
+    internal abstract class MessageIfDrawerBase : DoIfAttributeDrawer {
     protected abstract bool        IsBox          { get; }
     protected abstract string      Message        { get; }
     protected abstract MessageType MessageType    { get; }
@@ -8456,14 +8478,15 @@ namespace Fusion.Editor {
 #region PropertyDrawerForArrayWorkaround.cs
 
 //#define FUSION_EDITOR_TRACE
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using UnityEditor;
 
-  internal partial class PropertyDrawerForArrayWorkaround : DecoratorDrawer {
+    internal partial class PropertyDrawerForArrayWorkaround : DecoratorDrawer {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     internal class RedirectCustomPropertyDrawerAttribute : Attribute {
       public RedirectCustomPropertyDrawerAttribute(Type attributeType, Type drawerType) {
@@ -8579,13 +8602,14 @@ namespace Fusion.Editor {
 
 #region PropertyDrawerWithErrorHandling.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using UnityEditor;
+    using UnityEngine;
 
-  internal abstract class PropertyDrawerWithErrorHandling : PropertyDrawer {
+    internal abstract class PropertyDrawerWithErrorHandling : PropertyDrawer {
     private SerializedProperty _currentProperty;
 
     private readonly Dictionary<string, Entry> _errors = new();
@@ -8711,11 +8735,12 @@ namespace Fusion.Editor {
 
 #region RangeAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(RangeExAttribute))]
+    [CustomPropertyDrawer(typeof(RangeExAttribute))]
   internal class RangeAttributeDrawer : PropertyDrawer {
 
     const float FieldWidth = 130.0f;
@@ -8822,11 +8847,12 @@ namespace Fusion.Editor {
 
 #region ReadOnlyAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  internal partial class ReadOnlyAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
+    internal partial class ReadOnlyAttributeDrawer : DecoratingPropertyAttributeDrawer, INonApplicableOnArrayElements {
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
       var  attribute  = (ReadOnlyAttribute)this.attribute;
       bool isPlayMode = EditorApplication.isPlayingOrWillChangePlaymode;
@@ -8848,12 +8874,13 @@ namespace Fusion.Editor {
 
 #region ScenePathAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(ScenePathAttribute))]
+    [CustomPropertyDrawer(typeof(ScenePathAttribute))]
   internal class ScenePathAttributeDrawer : PropertyDrawerWithErrorHandling {
     private SceneAsset[] _allScenes;
 
@@ -8898,12 +8925,12 @@ namespace Fusion.Editor {
 
 #region ScriptFieldDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  internal class ScriptFieldDrawer : PropertyDrawer {
+    internal class ScriptFieldDrawer : PropertyDrawer {
     
     private new ScriptHelpAttribute attribute => (ScriptHelpAttribute)base.attribute;
 
@@ -9018,14 +9045,13 @@ namespace Fusion.Editor {
 
 #region SerializableTypeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(SerializableType<>))]
+    [CustomPropertyDrawer(typeof(SerializableType<>))]
   [CustomPropertyDrawer(typeof(SerializableType))]
   [CustomPropertyDrawer(typeof(SerializableTypeAttribute))]
   internal class SerializableTypeDrawer : PropertyDrawerWithErrorHandling {
@@ -9087,12 +9113,13 @@ namespace Fusion.Editor {
 
 #region SerializeReferenceTypePickerAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(SerializeReferenceTypePickerAttribute))]
+    [CustomPropertyDrawer(typeof(SerializeReferenceTypePickerAttribute))]
   partial class SerializeReferenceTypePickerAttributeDrawer : DecoratingPropertyAttributeDrawer {
     
     const string NullContent = "Null";
@@ -9143,11 +9170,12 @@ namespace Fusion.Editor {
 
 #region ToggleLeftAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(ToggleLeftAttribute))]
+    [CustomPropertyDrawer(typeof(ToggleLeftAttribute))]
   internal class ToggleLeftAttributeDrawer : PropertyDrawer {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
       EditorGUI.BeginProperty(position, label, property);
@@ -9169,13 +9197,14 @@ namespace Fusion.Editor {
 
 #region UnitAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(UnitAttribute))]
+    [CustomPropertyDrawer(typeof(UnitAttribute))]
   [FusionPropertyDrawerMeta(HandlesUnits = true)]
   internal partial class UnitAttributeDrawer : DecoratingPropertyAttributeDrawer {
     private GUIContent _label;
@@ -9308,12 +9337,13 @@ namespace Fusion.Editor {
 
 #region UnityAssetGuidAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using System;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(UnityAssetGuidAttribute))]
+    [CustomPropertyDrawer(typeof(UnityAssetGuidAttribute))]
   [FusionPropertyDrawerMeta(HasFoldout = false)]
   internal class UnityAssetGuidAttributeDrawer : PropertyDrawerWithErrorHandling {
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
@@ -9434,11 +9464,12 @@ namespace Fusion.Editor {
 
 #region UnityResourcePathAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomPropertyDrawer(typeof(UnityResourcePathAttribute))]
+    [CustomPropertyDrawer(typeof(UnityResourcePathAttribute))]
   internal class UnityResourcePathAttributeDrawer : PropertyDrawerWithErrorHandling {
     protected override void OnGUIInternal(Rect position, SerializedProperty property, GUIContent label) {
       var attrib = (UnityResourcePathAttribute)attribute;
@@ -9479,11 +9510,12 @@ namespace Fusion.Editor {
 
 #region WarnIfAttributeDrawer.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  partial class WarnIfAttributeDrawer : MessageIfDrawerBase {
+    partial class WarnIfAttributeDrawer : MessageIfDrawerBase {
     private new WarnIfAttribute Attribute   => (WarnIfAttribute)attribute;
 
     protected override bool        IsBox          => Attribute.AsBox;
@@ -9723,8 +9755,9 @@ namespace Fusion.Editor {
 
 #region DrawInlineAttributeDrawer.Odin.cs
 
-namespace Fusion.Editor {
-  partial class DrawInlineAttributeDrawer {
+namespace Fusion.Editor
+{
+    partial class DrawInlineAttributeDrawer {
 #if ODIN_INSPECTOR && !FUSION_ODIN_DISABLED
     [FusionOdinAttributeConverter]
     static System.Attribute[] ConvertToOdinAttributes(System.Reflection.MemberInfo memberInfo, DrawInlineAttribute attribute) {
@@ -9822,8 +9855,9 @@ namespace Fusion.Editor {
 
 #region HideArrayElementLabelAttributeDrawer.Odin.cs
 
-namespace Fusion.Editor {
-  partial class HideArrayElementLabelAttributeDrawer {
+namespace Fusion.Editor
+{
+    partial class HideArrayElementLabelAttributeDrawer {
 #if ODIN_INSPECTOR && !FUSION_ODIN_DISABLED
     [FusionOdinAttributeConverter]
     static System.Attribute[] ConvertToOdinAttributes(System.Reflection.MemberInfo memberInfo, HideArrayElementLabelAttribute attribute) {
@@ -10001,10 +10035,11 @@ namespace Fusion.Editor {
 
 #region FusionOdinAttributeConverterAttribute.cs
 
-namespace Fusion.Editor {
-  using System;
+namespace Fusion.Editor
+{
+    using System;
 
-  [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method)]
   public class FusionOdinAttributeConverterAttribute : Attribute {
   }
 }
@@ -10254,8 +10289,9 @@ namespace Fusion.Editor {
 
 #region ReadOnlyAttributeDrawer.Odin.cs
 
-namespace Fusion.Editor {
-  partial class ReadOnlyAttributeDrawer {
+namespace Fusion.Editor
+{
+    partial class ReadOnlyAttributeDrawer {
 #if ODIN_INSPECTOR && !FUSION_ODIN_DISABLED
     [FusionOdinAttributeConverter]
     static System.Attribute[] ConvertToOdinAttributes(System.Reflection.MemberInfo memberInfo, ReadOnlyAttribute attribute) {
@@ -10408,10 +10444,11 @@ namespace Fusion.Editor {
 
 #region INetworkAssetSourceFactory.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  public partial interface INetworkAssetSourceFactory {
+    public partial interface INetworkAssetSourceFactory {
     int Order { get; }
   }
   
@@ -10516,8 +10553,9 @@ namespace Fusion.Editor {
 
 #region NetworkAssetSourceFactoryResource.cs
 
-namespace Fusion.Editor {
-  public partial class NetworkAssetSourceFactoryResource : INetworkAssetSourceFactory {
+namespace Fusion.Editor
+{
+    public partial class NetworkAssetSourceFactoryResource : INetworkAssetSourceFactory {
     public const int Order = 1000;
 
     int INetworkAssetSourceFactory.Order => Order;
@@ -10545,11 +10583,12 @@ namespace Fusion.Editor {
 
 #region NetworkAssetSourceFactoryStatic.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  public partial  class NetworkAssetSourceFactoryStatic : INetworkAssetSourceFactory {
+    public partial  class NetworkAssetSourceFactoryStatic : INetworkAssetSourceFactory {
     public const int Order = int.MaxValue;
 
     int INetworkAssetSourceFactory.Order => Order;
@@ -10584,12 +10623,13 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionEditorConfigImporter.cs
 
-namespace Fusion.Editor {
-  using System.IO;
-  using UnityEditor.AssetImporters;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.IO;
+    using UnityEditor.AssetImporters;
+    using UnityEngine;
 
-  [ScriptedImporter(0, "editorconfig")]
+    [ScriptedImporter(0, "editorconfig")]
   public class FusionEditorConfigImporter : ScriptedImporter {
     public override void OnImportAsset(AssetImportContext ctx) {
       var path      = ctx.assetPath;
@@ -10613,14 +10653,15 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionHierarchyWindowOverlay.cs
 
-﻿namespace Fusion.Editor {
-  using System;
-  using Fusion.Analyzer;
-  using UnityEditor;
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
+﻿namespace Fusion.Editor
+{
+    using System;
+    using Fusion.Analyzer;
+    using UnityEditor;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
 
-  internal class FusionHierarchyWindowOverlay {
+    internal class FusionHierarchyWindowOverlay {
 
     [RuntimeInitializeOnLoadMethod]
     public static void Initialize() {
@@ -10740,19 +10781,18 @@ namespace Fusion.Editor {
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 #if FUSION_WEAVER && UNITY_EDITOR
-  using System;
-  using System.Collections.Generic;
-  using System.ComponentModel;
-  using System.IO;
-  using System.Text.RegularExpressions;
-  using Photon.Realtime;
-  using UnityEditor;
-  using UnityEngine;
-  using UnityEngine.UI;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text.RegularExpressions;
+    using Photon.Realtime;
+    using UnityEditor;
+    using UnityEngine;
 
-  public partial class FusionHubWindow {
+    public partial class FusionHubWindow {
     /// <summary>
     /// Section Definition.
     /// </summary>
@@ -11041,16 +11081,16 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionInstaller.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 #if !FUSION_DEV
-  using System;
-  using System.IO;
-  using UnityEditor;
-  using UnityEditor.Build;
-  using UnityEditor.PackageManager;
-  using UnityEngine;
+    using System.IO;
+    using UnityEditor;
+    using UnityEditor.Build;
+    using UnityEditor.PackageManager;
+    using UnityEngine;
 
-  [InitializeOnLoad]
+    [InitializeOnLoad]
   class FusionInstaller {
     const string DEFINE_VERSION = "FUSION2";
     const string DEFINE = "FUSION_WEAVER";
@@ -11108,14 +11148,15 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionSceneSetupAssistants.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using UnityEditor;
 
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
-  using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using System.Collections.Generic;
 
-  public static class FusionSceneSetupAssistants {
+    public static class FusionSceneSetupAssistants {
 
     [MenuItem("Tools/Fusion/Scene/Setup Networking in the Scene", false, FusionAssistants.PRIORITY_LOW + 1)]
     [MenuItem("GameObject/Fusion/Scene/Setup Networking in the Scene", false, FusionAssistants.PRIORITY + 1)]
@@ -11220,13 +11261,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionUnitySurrogateBaseWrapper.cs
 
-﻿namespace Fusion.Editor {
-  using System;
-  using Internal;
-  using UnityEditor;
-  using UnityEngine;
+﻿namespace Fusion.Editor
+{
+    using System;
+    using Internal;
+    using UnityEditor;
+    using UnityEngine;
 
-  internal class FusionUnitySurrogateBaseWrapper : ScriptableObject {
+    internal class FusionUnitySurrogateBaseWrapper : ScriptableObject {
     [SerializeReference]
     public UnitySurrogateBase Surrogate;
     [NonSerialized]
@@ -11241,14 +11283,13 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/FusionWeaverTriggerImporter.cs
 
-namespace Fusion.Editor {
-  using System.IO;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEditor.AssetImporters;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEditor.AssetImporters;
+    using UnityEngine;
 
-  [ScriptedImporter(1, ExtensionWithoutDot, NetworkProjectConfigImporter.ImportQueueOffset + 1)]
+    [ScriptedImporter(1, ExtensionWithoutDot, NetworkProjectConfigImporter.ImportQueueOffset + 1)]
   public class FusionWeaverTriggerImporter : ScriptedImporter {
     public const string DependencyName = "FusionILWeaverTriggerImporter/ConfigHash";
     public const string Extension = "." + ExtensionWithoutDot;
@@ -11307,11 +11348,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/ILWeaverUtils.cs
 
-namespace Fusion.Editor {
-  using UnityEditor;
-  using UnityEditor.Compilation;
-  
-  [InitializeOnLoad]
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEditor.Compilation;
+
+    [InitializeOnLoad]
   public static class ILWeaverUtils {
     [MenuItem("Tools/Fusion/Run Weaver")]
     public static void RunWeaver() {
@@ -11330,15 +11372,15 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkBehaviourEditor.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomEditor(typeof(NetworkBehaviour), true)]
+    [CustomEditor(typeof(NetworkBehaviour), true)]
   [CanEditMultipleObjects]
   public class NetworkBehaviourEditor : BehaviourEditor {
 
@@ -11490,11 +11532,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkMecanimAnimatorEditor.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 
-  using UnityEditor;
+    using UnityEditor;
 
-  [CustomEditor(typeof(NetworkMecanimAnimator))]
+    [CustomEditor(typeof(NetworkMecanimAnimator))]
 
   public class NetworkMecanimAnimatorEditor : BehaviourEditor {
     public override void OnInspectorGUI() {
@@ -11517,13 +11560,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkObjectBakerEditTime.cs
 
-﻿namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using UnityEditor;
-  using UnityEngine;
+﻿namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using UnityEditor;
+    using UnityEngine;
 
-  public class NetworkObjectBakerEditTime : NetworkObjectBaker {
+    public class NetworkObjectBakerEditTime : NetworkObjectBaker {
     private Dictionary<Type, int?> _executionOrderCache = new Dictionary<Type, int?>();
 
     protected override bool TryGetExecutionOrder(MonoBehaviour obj, out int order) {
@@ -11569,21 +11613,22 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkObjectEditor.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Reflection;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using UnityEditor;
+    using UnityEngine;
 #if UNITY_2021_2_OR_NEWER
-  using UnityEditor.SceneManagement;
+    using UnityEditor.SceneManagement;
 
 #else
   using UnityEditor.Experimental.SceneManagement;
 #endif
 
-  [CustomEditor(typeof(NetworkObject), true)]
+    [CustomEditor(typeof(NetworkObject), true)]
   [InitializeOnLoad]
   [CanEditMultipleObjects]
   public unsafe class NetworkObjectEditor : BehaviourEditor {
@@ -11918,18 +11963,15 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkObjectPostprocessor.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEditor.Build;
-  using UnityEditor.Build.Reporting;
-  using UnityEditor.SceneManagement;
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
+namespace Fusion.Editor
+{
+    using System;
+    using UnityEditor;
+    using UnityEditor.SceneManagement;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
 
-  public class NetworkObjectPostprocessor : AssetPostprocessor {
+    public class NetworkObjectPostprocessor : AssetPostprocessor {
 
     public static event Action<NetworkObjectBakePrefabArgs> OnBakePrefab;
     public static event Action<NetworkObjectBakeSceneArgs> OnBakeScene;
@@ -12182,16 +12224,17 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkPrefabsInspector.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEditor.IMGUI.Controls;
-  using UnityEngine;
-  using Object = UnityEngine.Object;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEditor.IMGUI.Controls;
+    using UnityEngine;
+    using Object = UnityEngine.Object;
 
-  public class NetworkPrefabsInspector : EditorWindow {
+    public class NetworkPrefabsInspector : EditorWindow {
 
     private Grid _grid = new Grid();
     
@@ -12486,14 +12529,14 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkPrefabSourceFactories.cs
 
-﻿namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using UnityEditor;
-  using UnityEngine;
+﻿namespace Fusion.Editor
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
 
-  partial interface INetworkAssetSourceFactory {
+    partial interface INetworkAssetSourceFactory {
     INetworkPrefabSource           TryCreatePrefabSource(in NetworkAssetSourceFactoryContext context);
   }
 
@@ -12558,14 +12601,13 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkRunnerEditor.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Linq;
-  using System.Runtime.InteropServices;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
 
-  [CustomEditor(typeof(NetworkRunner))]
+    [CustomEditor(typeof(NetworkRunner))]
   public class NetworkRunnerEditor : BehaviourEditor {
 
     void Label<T>(string label, T value) {
@@ -12668,11 +12710,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/NetworkTRSPEditor.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 
-  using UnityEditor;
+    using UnityEditor;
 
-  [CustomEditor(typeof(NetworkTRSP), true)]
+    [CustomEditor(typeof(NetworkTRSP), true)]
   public unsafe class NetworkTRSPEditor : NetworkBehaviourEditor {
     public override void OnInspectorGUI() {
       base.OnInspectorGUI();
@@ -12693,14 +12736,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/PhotonAppSettingsEditor.cs
 
-namespace Fusion.Editor {
-  using System.Collections;
-  using System.Collections.Generic;
-  using UnityEngine;
-  using UnityEditor;
-  using Photon.Realtime;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using Photon.Realtime;
 
-  [CustomEditor(typeof(PhotonAppSettings))]
+    [CustomEditor(typeof(PhotonAppSettings))]
   public class PhotonAppSettingsEditor : Editor {
 
     public override void OnInspectorGUI() {
@@ -12729,17 +12770,18 @@ namespace Fusion.Editor {
 // <author>developer@exitgames.com</author>
 // ---------------------------------------------------------------------------------------------
 
-namespace Fusion.Editor {
-  using System.Collections.Generic;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System.Collections.Generic;
+    using UnityEngine;
 
-  using UnityEditor.Animations;
-  using UnityEditor;
+    using UnityEditor.Animations;
+    using UnityEditor;
 
-  /// <summary>
-  /// Storage type for AnimatorController cached transition data, which is a bit different than basic state hashes
-  /// </summary>
-  [System.Serializable]
+    /// <summary>
+    /// Storage type for AnimatorController cached transition data, which is a bit different than basic state hashes
+    /// </summary>
+    [System.Serializable]
   public class TransitionInfo {
     public int index;
     public int hash;
@@ -13115,22 +13157,20 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/Utilities/AssetDatabaseUtils.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Text;
-  using System.Threading.Tasks;
-  using UnityEditor;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Linq;
+    using UnityEditor;
 #if UNITY_2021_2_OR_NEWER
-  using UnityEditor.SceneManagement;
+    using UnityEditor.SceneManagement;
 #else
   using UnityEditor.Experimental.SceneManagement;
 #endif
 
-  using UnityEngine;
+    using UnityEngine;
 
-  public static partial class AssetDatabaseUtils {
+    public static partial class AssetDatabaseUtils {
     public static T GetSubAsset<T>(GameObject prefab) where T : ScriptableObject {
 
       if (!AssetDatabase.IsMainAsset(prefab)) {
@@ -13162,16 +13202,12 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/Utilities/FusionEditorGUI.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Collections.Generic;
-  using System.Linq;
-  using System.Text;
-  using System.Threading.Tasks;
-  using UnityEditor;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using UnityEditor;
+    using UnityEngine;
 
-  public static partial class FusionEditorGUI {
+    public static partial class FusionEditorGUI {
 
     public static void LayoutSelectableLabel(GUIContent label, string contents) {
       var rect = EditorGUILayout.GetControlRect();
@@ -13213,12 +13249,13 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/Utilities/FusionEditorGUI.Thumbnail.cs
 
-namespace Fusion.Editor {
-  using System;
-  using System.Text;
-  using UnityEngine;
+namespace Fusion.Editor
+{
+    using System;
+    using System.Text;
+    using UnityEngine;
 
-  public static partial class FusionEditorGUI {
+    public static partial class FusionEditorGUI {
 
     static readonly int _thumbnailFieldHash = "Thumbnail".GetHashCode();
     static Texture2D _thumbnailBackground;
@@ -13352,21 +13389,19 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/Utilities/NetworkProjectConfigUtilities.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 
-  using UnityEditor;
-  using UnityEngine;
-  using UnityEngine.SceneManagement;
-  using System.Collections.Generic;
-  using Fusion.Photon.Realtime;
-  using System.Linq;
-  using System.IO;
-  using System;
-  
-  /// <summary>
-  /// Editor utilities for creating and managing the <see cref="NetworkProjectConfigAsset"/> singleton.
-  /// </summary>
-  [InitializeOnLoad]
+    using UnityEditor;
+    using UnityEngine;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.IO;
+
+    /// <summary>
+    /// Editor utilities for creating and managing the <see cref="NetworkProjectConfigAsset"/> singleton.
+    /// </summary>
+    [InitializeOnLoad]
   public static class NetworkProjectConfigUtilities {
 
     // Constructor runs on project load, allows for startup check for existence of NPC asset.
@@ -13527,13 +13562,13 @@ namespace Fusion.Editor {
 
 #region Assets/Photon/Fusion/Editor/Utilities/NetworkRunnerUtilities.cs
 
-namespace Fusion.Editor {
+namespace Fusion.Editor
+{
 
-  using System.Collections.Generic;
-  using UnityEngine;
-  using UnityEditor;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-  public static class NetworkRunnerUtilities {
+    public static class NetworkRunnerUtilities {
 
     static List<NetworkRunner> reusableRunnerList = new List<NetworkRunner>();
 

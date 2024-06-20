@@ -1,4 +1,5 @@
 ﻿using SpellFlinger.Enum;
+using SpellSlinger.Networking;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,31 +8,21 @@ namespace SpellFlinger.PlayScene
 {
     public class PlayerManager : Singleton<PlayerManager>
     {
-        [SerializeField] private Material _friendlyMaterial; 
-        [SerializeField] private Material _enemyMaterial;        
-        [SerializeField] private Color _friendlyColor; 
+        [SerializeField] private Material _friendlyMaterial;
+        [SerializeField] private Material _enemyMaterial;
+        [SerializeField] private Color _friendlyColor;
         [SerializeField] private Color _enemyColor;
-        [SerializeField] private int _teamKillsForWin = 0;
-        [SerializeField] private int _soloKillsForWin = 0;
-        private List<PlayerStats> _playerStats = new List<PlayerStats>();
-        private TeamType _friendlyTeam = TeamType.None;
+        private List<PlayerStats> _players = new();
+        private TeamType _friendlyTeam;
 
-        public Action OnPlayerTeamTypeSet;
+        public Action OnPlayerTeamTypeSet = null;
         public TeamType FriendlyTeam => _friendlyTeam;
         public Color FriendlyColor => _friendlyColor;
         public Color EnemyColor => _enemyColor;
-        public int TeamKillsForWin => _teamKillsForWin;
-        public int SoloKillsForWin => _soloKillsForWin;
 
-        public void RegisterPlayer(PlayerStats player)
-        {
-            /*
-             * Potrebno je dodati igrača u listu registriranih, te mu postaviti timsku boju slično 
-             * načinu kako se to obavlja u metodi SetFriendlyTeam.
-             */
-        }
+        public void RegisterPlayer(PlayerStats player) => _players.Add(player);
 
-        public void UnregisterPlayer(PlayerStats player) => _playerStats.Remove(player);
+        public void UnregisterPlayer(PlayerStats player) => _players.Remove(player);
 
         public TeamType GetTeamWithLessPlayers()
         {
@@ -46,29 +37,30 @@ namespace SpellFlinger.PlayScene
         public void SetFriendlyTeam(TeamType friendlyTeam)
         {
             _friendlyTeam = friendlyTeam;
-
-            _playerStats.ForEach((player) =>
-            {
-                if (player.Team == _friendlyTeam) player.SetTeamMaterial(_friendlyMaterial, _friendlyColor);
-                else if (player.Team != TeamType.None) player.SetTeamMaterial(_enemyMaterial, _enemyColor);
-            });
-
-            OnPlayerTeamTypeSet.Invoke();
+            _players.ForEach((player) => SetPlayerColor(player));
+            OnPlayerTeamTypeSet?.Invoke();
         }
 
-        public void SendGameEndRpc(string winnerName)
+        public void SetPlayerColor(PlayerStats player)
         {
-            _playerStats.ForEach((player) => player.GameEndRpc(winnerName));
+            if (FusionConnection.GameModeType == GameModeType.DM || player.Team != _friendlyTeam) player.SetTeamMaterial(_enemyMaterial, _enemyColor);
+            else player.SetTeamMaterial(_friendlyMaterial, _friendlyColor);
         }
 
-        public void SendGameEndRpc(TeamType winnerTeam)
+        public void SendGameEndRpc() => _players.ForEach((player) =>
         {
-            _playerStats.ForEach((player) => player.GameEndRpc(winnerTeam));
-        }
+            player.PlayerCharacterController.RPC_DisableController();
+            player.PlayerCharacterController.RPC_GameEnd();
+            player.PlayerCharacterController.StopRespawnCoroutine();
+        });
 
-        public void ResetGameStats()
+        public void SendGameStartRpc() => _players.ForEach((player) =>
         {
-            _playerStats.ForEach((player) => player.ResetGameInfo());  
-        }
+            player.PlayerCharacterController.RPC_EnableController();
+            player.PlayerCharacterController.RPC_GameStart();
+            player.PlayerCharacterController.SetGameStartPosition();
+        });
+
+        public void ResetPlayerStats() => _players.ForEach((player) => player.ResetGameInfo());
     }
 }
