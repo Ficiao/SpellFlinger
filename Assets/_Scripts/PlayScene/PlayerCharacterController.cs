@@ -119,35 +119,31 @@ namespace SpellFlinger.PlayScene
 
             if (GetInput(out NetworkInputData data))
             {
-                if (data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot(data.ShootTarget);
-
-                _playerAnimationController.AnimationUpdate(_networkController.Grounded, data.Direction.x, data.Direction.y, ref _playerAnimationState, _playerAnimator, _playerModel.transform, transform);
-
                 bool isGrounded = _characterController.isGrounded;
                 if (isGrounded) _updatesSinceLastGrounded = 0;
+                //This is done to avoid jittering with collider switching between grounded and not grounded between calls.
                 else if (_updatesSinceLastGrounded < 3)
                 {
                     isGrounded = true;
                     _updatesSinceLastGrounded++;
                 }
 
-                bool jump = data.Buttons.IsSet(NetworkInputData.JUMP);
+                if (data.Buttons.IsSet(NetworkInputData.SHOOT)) Shoot(data.ShootTarget);
 
-                if (isGrounded && jump)
-                {
-                    _networkController.Jump();
-                    _jumpTime = Time.time;
-                }
-
-                if (isGrounded) _doubleJumpAvailable = true;
-                else if (jump && _doubleJumpAvailable && Time.time - _jumpTime >= _doubleJumpDelay)
-                {
-                    _doubleJumpAvailable = false;
-                    _networkController.Jump(ignoreGrounded: true, doubleJump: true);
-                    Debug.Log("Double jumped");
-                }
-
-                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.YRotation, isGrounded);
+                /*
+                 * U ovoj metodi potrebno je nadopuniti kod za kretanje. Komande smijera kretanja dobivaju se iz poslanog NetworkInputData
+                 * podatka. Sve narede kretanja odvijaju se preko poziva metoda pripadne instance klase NetworkCharacterController-a.
+                 * Potrebno projveriti je li dana naredba za skok. Ako je, i ako je igrač prizemljen potrebno 
+                 * Potrebno je ažurirati stanje animacije PlayerAnimationController-a. Također je potrebno projveriti je li dana naredba za 
+                 * skok. Ako je, i ako je igrač prizemljen i ako je prošlo dovoljno vremena od prošlog skoka potrebno je pozvati metodu za skok 
+                 * klase NetworkCharacterController. Ako lik nije prizemljen, a dana je naredba potrebno je pozvati metodu za skok ako je postavljena 
+                 * zastavica duplog skoka. U tome slučaju potrebno je maknuti zastavicu duplog skoka. Zastavicu duplog skoka je potrebno postaviti kada je
+                 * lik prizemljen. Pri skoku je potrebno zabilježiti posljednje vrijeme kada je skok aktiviran. 
+                 * Na kraju je potrebno pozvati metodu Move za pomicanje lika klase NetworkCharacterController. 
+                 * 
+                 * Kod metode Move klase NetworkCharacterController je izmjenjen za potrebe ovog projekta kako bi kretanje bolje odgovaralo korisničkom iskustvu. 
+                 * Tu metodu kao i metodu AdjustVelocityToSlope možete proučiti i po želji izmijeniti. 
+                 */
             }
         }
 
@@ -162,28 +158,29 @@ namespace SpellFlinger.PlayScene
 
         private IEnumerator RespawnCoroutine()
         {
-            RPC_DisableController();
-            _playerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
+            /*
+             * U ovoj metodi potrebno je zamijeniti liniju yield return null potrebnim kodom.
+             * Prvo je potrebno pozvati metodu udaljene procedure za gašenje 
+             * controllera lika na klijentu, jer se ova metoda izvodi na računalu domaćina.
+             * Potom je potrebno postaviti stanje animacije smrti PlayerAnimationController-a
+             * i započeti odbrojavanje. Svake sekunde je potrebno smanjiti vrijednost umrežene 
+             * varijable RemainingRespawnTime za jedan, dok ne dođe do 0. Kada postigne vrijednost
+             * 0 potrebno je pozvati medotu pripadne instance klase PlayerStats za resetiranje životnih
+             * bodova, pozvati metodu udaljenog poziva za ponovnu aktivaciju conrollera na klijentu, 
+             * postaviti zastavicu za ponocno postavljanje nasumične početne pozicije i postaviti 
+             * stanje animacije življenja PlayerAnimationController-a.
+             */
 
-            for (int i = RemainingRespawnTime; i > 0; i--)
-            {
-                yield return new WaitForSeconds(1);
-                RemainingRespawnTime--;
-            }
-
-            _playerStats.ResetHealth();
-            RPC_EnableController();
-            _resetPosition = true;
-            _playerAnimationController.SetAliveState(ref _playerAnimationState, _playerAnimator);
+            yield return null;
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority, HostMode = RpcHostMode.SourceIsServer)]
         private void RPC_PlayerKilled()
         {
-            _playerAnimationController.SetDeadState(ref _playerAnimationState, _playerAnimator);
-            UiManager.Instance.ShowPlayerDeathScreen(_respawnTime);
-            _cameraController.CameraLock = true;
-            _cameraController.CameraEnabled = false;
+            /*
+             * U ovoj metodi potrebno je postaviti stanje animacije smrti PlayerAnimationControllera,
+             * prikazati ekran smrti preko singleton instance UiManager skripte, te onesposobiti i zakljućati kameru.
+             */
         }
 
         private void RespawnTimeChanged()
