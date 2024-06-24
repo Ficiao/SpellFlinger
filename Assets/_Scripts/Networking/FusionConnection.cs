@@ -46,9 +46,6 @@ namespace SpellSlinger.Networking
 
         public async void CreateSession(string sessionName, GameModeType gameMode, LevelType level)
         {
-
-            _runner.ProvideInput = false;
-
             /* U ovoj metodi potrebno je lokalno cache-irati odabrani način igre, te pozvati metodu StartGame NetworkRunner instance koja igrača spaja u sobu.
              * StartGame metoda prima argument tipa strukture. Potrebno je napraviti novu instancu strukture, te joj inicijalizirati vrijednosti.
              * Potrebno je postaviti način igre na Shared, proslijediti ime sesije, scenu koja se treba učitat nakon spajanja u sobu (parametar se 
@@ -57,23 +54,6 @@ namespace SpellSlinger.Networking
              * SessionPropeties, te mu proslijedite sva potrebna svojstva. (tip: za pretvaranje custom svojstva u pogodan oblik može se koristiti
              * SessionProperty.Convert() metoda.
              */
-
-            _runner.ProvideInput = true;
-
-            Dictionary<string, SessionProperty> properties = new Dictionary<string, SessionProperty>();
-            properties.Add("level", SessionProperty.Convert((int)level));
-            properties.Add("gameMode", SessionProperty.Convert((int)gameMode));
-            _gameModeType = gameMode;
-
-            await _runner.StartGame(new StartGameArgs()
-            {
-                GameMode = GameMode.Host,
-                SessionName = sessionName,
-                Scene = SceneRef.FromIndex((int)level),
-                PlayerCount = _playerCount,
-                SceneManager = _networkSceneManager,
-                SessionProperties = properties,
-            });
         }
 
         public async void JoinSession(string sessionName, GameModeType gameMode)
@@ -91,14 +71,16 @@ namespace SpellSlinger.Networking
         public void LeaveSession()
         {
             /*
-             * U ovoj metodi je potrebno pozvati Shutdown metodu instance NetworkRunner klase, učitati početni ekran i otključati cursor korisnika
+             * U ovoj metodi je potrebno pozvati Shutdown metodu instance NetworkRunner klase, učitati početni ekran 
+             * i otključati cursor korisnika
              */
         }
 
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
         {
             /*
-             * U ovoj metodi je potrebno lokalno spremiti osvježenu listu soba, te osvježiti prikaz liste soba.
+             * U ovoj metodi je potrebno lokalno spremiti osvježenu listu soba, te osvježiti prikaz liste soba pozivom 
+             * pripadne metode klase SessionView.
              */
         }
 

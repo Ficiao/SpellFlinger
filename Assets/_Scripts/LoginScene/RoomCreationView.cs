@@ -39,11 +39,6 @@ namespace SpellFlinger.LoginScene
             /*  
              *  Potrebno je pozvati metodu instance FusionConnection za stvaranje sobe, te joj poslati potrebne parametre.
              */
-
-
-            GameModeType gameMode = _teamDeathMatchToggle.isOn ? GameModeType.TDM : GameModeType.DM;
-            LevelType level = _selectedLevelType;
-            FusionConnection.Instance.CreateSession(_roomNameInput.text, gameMode, level);
         }
     }
 }
