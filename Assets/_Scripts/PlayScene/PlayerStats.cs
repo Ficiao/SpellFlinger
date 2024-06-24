@@ -100,16 +100,21 @@ namespace SpellFlinger.PlayScene
 
         private void HealthChanged()
         {
-            if (!HasInputAuthority) _healthBar.value = (float)Health / _maxHealth;
-            else UiManager.Instance.UpdateHealthBar(Health, (float)Health / _maxHealth);
+            /*
+             * Ako su promjenjeni životni bodovi vlastitog igrača potrebno je ažurirati prikaz 
+             * života na dnu ekrana pozivom metode instance singleton klase UiManager,
+             * a ako su promjenjeni životni bodovi nekog drugog igrača potrebno je ažurirati
+             * pripadni prikaz životnih bodova koji se nalazi iznad glave igrača.
+             */
         }
 
         private void KillsChanged()
         {
-            if (FusionConnection.GameModeType == GameModeType.DM && HasInputAuthority) UiManager.Instance.UpdateSoloScore(Kills);
-            else if (FusionConnection.GameModeType == GameModeType.TDM) UiManager.Instance.UpdateTeamScore();
-
-            _playerScoreboardData.UpdateScore(Kills, Deaths);
+            /*
+             * U ovoj metodi je potrebno ažurirati prikaz instance PlayerScoreboardData ovog igrača.
+             * Također je potrebno ažurirati prikaz bodova na vrhu ekrana pozivom pripadnih metoda instance 
+             * singleton klase UiManager ovisno je li u pitanju timska igra ili svatko protiv svakoga.
+             */
         }
 
         private void DeathsChanged() => _playerScoreboardData.UpdateScore(Kills, Deaths);
@@ -121,31 +126,16 @@ namespace SpellFlinger.PlayScene
              * U slučaju da su životni bodovi prije poziva bili veći od 0, 
              * a nakon smanjivanja padnu na nula, potrebno je povećati broj
              * deathova igrača, obavijestiti PlayerCharacterController o smrti igrača,
-             * te povećati broj killova igrača koji je napravio štetu pozivom udaljene procedure.
+             * te povećati broj killova igrača koji je napravio štetu, također u 
+             * slučaju načina igre svatko protiv svakoga potrebno je povećati broj 
+             * bodova tima igrača kojemu se dodaje bod.
+             * 
+             * 
+             * Ako je broj bodova igrača u načinu svatko protiv svakoga ili broj bodova
+             * tima u načinu timske igre ima isti iznos kao broj bodova potrebnih za pobjedu
+             * iz klase GameManager potrebno je pozvati pripadnu metodu za kraj igre singleton 
+             * instance klase GameManager.
              */
-
-            if (Health - damage <= 0)
-            {
-                if (Health == 0) return;
-
-                Deaths++;
-                attacker.Kills++;
-                _playerCharacterController.PlayerKilled();
-
-                if (FusionConnection.GameModeType == GameModeType.DM && attacker.Kills >= GameManager.Instance.SoloKillsForWin)
-                {
-                    GameManager.Instance.GameEnd(attacker.PlayerName.Value);
-                }
-                else if (FusionConnection.GameModeType == GameModeType.TDM)
-                {
-                    GameManager.Instance.AddTeamKill(attacker.Team);
-                    if (GameManager.Instance.GetTeamKills(attacker.Team) >= GameManager.Instance.TeamKillsForWin)
-                        GameManager.Instance.GameEnd(attacker.Team);
-                }
-
-                Health = 0;
-            }
-            else Health -= damage;
         }
 
         public void Heal(int healAmount)
@@ -154,7 +144,12 @@ namespace SpellFlinger.PlayScene
             if(Health > _maxHealth) Health  = _maxHealth;
         }
 
-        public void ApplySlow(float duration) => SlowDuration = duration;
+        public void ApplySlow(float duration)
+        {
+            /*
+             * U ovoj metodi je potrebno postaviti trajanje usporenog kretanja nakon pogotka ledenim projektilom.
+             */
+        }
 
         public void ResetHealth() => Health = _maxHealth;
 

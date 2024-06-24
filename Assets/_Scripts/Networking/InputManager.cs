@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Fusion;
 using Fusion.Sockets;
 using System.Collections.Generic;
@@ -29,28 +29,22 @@ namespace SpellSlinger.Networking
             Vector2 direction = Vector2.zero;
             NetworkButtons buttons = default;
 
-            if (Input.GetKey(KeyCode.W))
-                direction += Vector2.up;
-
-            if (Input.GetKey(KeyCode.S))
-                direction += Vector2.down;
-
-            if (Input.GetKey(KeyCode.D))
-                direction += Vector2.right;
-
-            if (Input.GetKey(KeyCode.A))
-                direction += Vector2.left;
-
-            _accumulatedInput.Direction += direction;
-
-            buttons.Set(NetworkInputData.JUMP, Input.GetKey(KeyCode.Space));
+            /*
+             * Ovu metodu je potrebno nadopuniti kodom za skupljanje korisničkih naredbi.
+             * Potrebno je skupiti pritisak tipki WASD kao komande za gretanje u naprijed, lijevo, nazad i desno,
+             * te rotaciju lika u x osi. Rotacija lika se očitava pomakom miša u x osi i osjetljivošću okretanja iz 
+             * SensitivitySettingsScriptable scriptable objekta.
+             * Očitane vrijednosti je potrebno spremiti u varijablu za akumulaciju naredbi između poziva metode OnInput.
+             * Također je potrebno očitati naredbu za skok pritiskom tipke space. Njeno spremanje se postiže na način sličan
+             * kao spremanje naredbe za pucanje.
+             */
 
             buttons.Set(NetworkInputData.SHOOT, Input.GetMouseButton(0));
+
             if (Input.GetMouseButton(0)) _accumulatedInput.ShootTarget = FusionConnection.Instance.LocalCharacterController.GetShootDirection();
 
             _accumulatedInput.Buttons = new NetworkButtons(_accumulatedInput.Buttons.Bits | buttons.Bits);
 
-            _accumulatedInput.YRotation += Input.GetAxis("Mouse X") * SensitivitySettingsScriptable.Instance.LeftRightSensitivity;
         }
 
         public void OnInput(NetworkRunner runner, NetworkInput input)

@@ -1,4 +1,4 @@
-using Fusion;
+﻿using Fusion;
 using SpellFlinger.Enum;
 using SpellSlinger.Networking;
 using System.Collections;
@@ -60,18 +60,17 @@ namespace SpellFlinger.PlayScene
         private IEnumerator GameEndCountdown()
         {
             RemainingGameEndTime = _gameEndTime;
-            PlayerManager.Instance.SendGameEndRpc();
 
-            for (int i = RemainingGameEndTime; i > 0; i--)
-            {
-                yield return new WaitForSeconds(1);
-                RemainingGameEndTime--;
-            }
+            /*
+             * U ovoj korutini potrebno je zamijeniti yield return null; liniju potrebnim kodom.
+             * Na početku potrebno pozvati metodu klase PlayerManager koja svim
+             * igračima šalje poruke za završetak runde. Potom započinje odbrojavanje gdje svake 
+             * sekunde smanjuje vrijednost varijable RemainingGameEndTime za jedan dok ne dođe do 0.
+             * Nakon što je završilo odbrojava preko klase PlayerManager potrebno je svim igračima potrebno 
+             * poslati poruke za početak nove runde.
+             */
 
-            TeamAKills = 0;
-            TeamBKills = 0;
-            PlayerManager.Instance.ResetPlayerStats();
-            PlayerManager.Instance.SendGameStartRpc();
+            yield return null;
         }
 
         private void WinnerChanged() => UiManager.Instance.UpdateEndGameText();

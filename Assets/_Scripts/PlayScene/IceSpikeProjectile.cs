@@ -26,14 +26,40 @@ namespace SpellFlinger.PlayScene
         {
             if (ProjectileHit) return;
 
-            /*
-             * U ovoj metodi je potrebno napraviti detekciju pogotka, slično kao u metodi FixedNetworkUpdate
-             * klase TeslaProjectile. Pri pogotku igrača uz štetu potrebno je pozvati metodu udaljene procedure
-             * klase PlayerStats tog igrača koja će ga usporiti na odabrano vrijeme. 
-             * U slučaju pogotka igrača potrebno je odmah uništiti objekt projektila, a ako je pogođen teren
-             * projektil je potrebno uništiti nakon odgode vremena.
-             */
-            
+            transform.position += (Direction * Runner.DeltaTime);
+
+            if (!HasStateAuthority) return;
+
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, _range);
+
+            foreach (Collider collider in hitColliders)
+            {
+                if (collider.tag == "Player")
+                {
+                    PlayerStats player = collider.GetComponent<PlayerStats>();
+
+                    if (player.Object.InputAuthority == OwnerPlayerStats.Object.InputAuthority) continue;
+                    if (FusionConnection.GameModeType == GameModeType.TDM && player.Team != OwnerPlayerStats.Team)
+                    {
+
+                        player.DealDamage(_damage, OwnerPlayerStats);
+                        player.ApplySlow(_slowDuration);
+                    }
+
+                    ProjectileHit = true;
+                    _projectileModel.transform.parent = player.transform;
+                    RPC_LockModelToPlayer(_projectileModel.transform.localPosition, player);
+                    Destroy(gameObject, _dissolveDelay);
+
+                    break;
+                }
+
+                if (hitColliders.Any(collider => collider.tag == "Ground"))
+                {
+                    ProjectileHit = true;
+                    Destroy(gameObject, _dissolveDelay);
+                }
+            }
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
