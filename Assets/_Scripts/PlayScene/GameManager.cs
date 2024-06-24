@@ -70,7 +70,6 @@ namespace SpellFlinger.PlayScene
 
             TeamAKills = 0;
             TeamBKills = 0;
-            PlayerManager.Instance.ResetPlayerStats();
             PlayerManager.Instance.SendGameStartRpc();
         }
 

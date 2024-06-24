@@ -63,8 +63,7 @@ namespace SpellFlinger.PlayScene
             player.PlayerCharacterController.RPC_EnableController();
             player.PlayerCharacterController.RPC_GameStart();
             player.PlayerCharacterController.SetGameStartPosition();
+            player.ResetGameInfo();
         });
-
-        public void ResetPlayerStats() => _players.ForEach((player) => player.ResetGameInfo());
     }
 }
