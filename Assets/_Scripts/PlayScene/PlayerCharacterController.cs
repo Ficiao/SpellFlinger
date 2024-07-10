@@ -131,6 +131,8 @@ namespace SpellFlinger.PlayScene
                     _updatesSinceLastGrounded++;
                 }
 
+                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.YRotation, isGrounded);
+
                 bool jump = data.Buttons.IsSet(NetworkInputData.JUMP);
 
                 if (isGrounded && jump)
@@ -146,8 +148,6 @@ namespace SpellFlinger.PlayScene
                     _networkController.Jump(ignoreGrounded: true, doubleJump: true);
                     Debug.Log("Double jumped");
                 }
-
-                _networkController.Move(data.Direction, _playerStats.IsSlowed, data.YRotation, isGrounded);             
             }
         }
 
