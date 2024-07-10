@@ -133,13 +133,12 @@ namespace SpellFlinger.PlayScene
                 /*
                  * U ovoj metodi potrebno je nadopuniti kod za kretanje. Komande smijera kretanja dobivaju se iz poslanog NetworkInputData
                  * podatka. Sve narede kretanja odvijaju se preko poziva metoda pripadne instance klase NetworkCharacterController-a.
-                 * Potrebno projveriti je li dana naredba za skok. Ako je, i ako je igrač prizemljen potrebno 
-                 * Potrebno je ažurirati stanje animacije PlayerAnimationController-a. Također je potrebno projveriti je li dana naredba za 
-                 * skok. Ako je, i ako je igrač prizemljen i ako je prošlo dovoljno vremena od prošlog skoka potrebno je pozvati metodu za skok 
-                 * klase NetworkCharacterController. Ako lik nije prizemljen, a dana je naredba potrebno je pozvati metodu za skok ako je postavljena 
-                 * zastavica duplog skoka. U tome slučaju potrebno je maknuti zastavicu duplog skoka. Zastavicu duplog skoka je potrebno postaviti kada je
+                 * Potrebno pozvati metodu Move za pomicanje lika klase NetworkCharacterController. 
+                 * Također je potrebno projveriti je li dana naredba za skok. Ako je, i ako je igrač prizemljen potrebno 
+                 * Potrebno je ažurirati stanje animacije PlayerAnimationController-a. Također ako je igrač prizemljen i ako je prošlo dovoljno vremena od p
+                 * rošlog skoka potrebno je pozvati metodu za skok klase NetworkCharacterController. Ako lik nije prizemljen, a postavljena je zastavica duplog skoka
+                 * potrebno je maknuti zastavicu duplog skoka i obaviti poziv metode za skok. Zastavicu duplog skoka je potrebno postaviti kada je
                  * lik prizemljen. Pri skoku je potrebno zabilježiti posljednje vrijeme kada je skok aktiviran. 
-                 * Na kraju je potrebno pozvati metodu Move za pomicanje lika klase NetworkCharacterController. 
                  * 
                  * Kod metode Move klase NetworkCharacterController je izmjenjen za potrebe ovog projekta kako bi kretanje bolje odgovaralo korisničkom iskustvu. 
                  * Tu metodu kao i metodu AdjustVelocityToSlope možete proučiti i po želji izmijeniti. 
